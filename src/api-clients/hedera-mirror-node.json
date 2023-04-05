@@ -1,0 +1,5246 @@
+{
+  "openapi": "3.0.3",
+  "paths": {
+    "/api/v1/accounts": {
+      "get": {
+        "summary": "List account entities on network",
+        "description": "Returns a list of all account entity items on the network.",
+        "operationId": "listAccounts",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/accountBalanceQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/accountIdQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/accountPublicKeyQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/balanceQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderQueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          }
+        },
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/api/v1/accounts/{idOrAliasOrEvmAddress}": {
+      "get": {
+        "summary": "Get account by alias, id, or evm address",
+        "description": "Return the account transactions and balance information given an account alias, an account id, or an evm address\n",
+        "operationId": "getAccountByIdOrAliasOrEvmAddress",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/accountIdOrAliasOrEvmAddressPathParam"
+          },
+          {
+            "$ref": "#/components/parameters/transactionTypeQueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountBalanceTransactions"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/api/v1/accounts/{idOrAliasOrEvmAddress}/nfts": {
+      "get": {
+        "summary": "Get nfts for an account info",
+        "description": "Returns information for all non-fungible tokens for an account.\n\n## Ordering\nWhen considering NFTs, their order is governed by a combination of their numerical **token.Id** and **serialnumber** values, with **token.id** being the parent column.\nA serialnumbers value governs its order within the given token.id\n\nIn that regard, if a user acquired a set of NFTs in the order (2-2, 2-4 1-5, 1-1, 1-3, 3-3, 3-4), the following layouts illustrate the ordering expectations for ownership listing\n1. **All NFTs in ASC order**: 1-1, 1-3, 1-5, 2-2, 2-4, 3-3, 3-4\n2. **All NFTs in DESC order**: 3-4, 3-3, 2-4, 2-2, 1-5, 1-3, 1-1\n3. **NFTs above 1-1 in ASC order**: 1-3, 1-5, 2-2, 2-4, 3-3, 3-4\n4. **NFTs below 3-3 in ASC order**: 1-1, 1-3, 1-5, 2-2, 2-4\n5. **NFTs between 1-3 and 3-3 inclusive in DESC order**: 3-4, 3-3, 2-4, 2-2, 1-5, 1-3\n\nNote: The default order for this API is currently DESC\n\n## Filtering\nWhen filtering there are some restrictions enforced to ensure correctness and scalability.\n\n**The table below defines the restrictions and support for the NFT ownership endpoint**\n\n| Query Param   | Comparison Operator | Support | Description           | Example |\n| ------------- | ------------------- | ------- | --------------------- | ------- |\n| token.id      | eq                  | Y       | Single occurrence only. | ?token.id=X |\n|               | ne                  | N       | | |\n|               | lt(e)               | Y       | Single occurrence only. | ?token.id=lte:X |\n|               | gt(e)               | Y       | Single occurrence only. | ?token.id=gte:X |\n| serialnumber  | eq                  | Y       | Single occurrence only. Requires the presence of a **token.id** query | ?serialnumber=Y |\n|               | ne                  | N       | | |\n|               | lt(e)               | Y       | Single occurrence only. Requires the presence of an **lte** **token.id** query | ?token.id=lte:X&serialnumber=lt:Y |\n|               | gt(e)               | Y       | Single occurrence only. Requires the presence of an **gte** **token.id** query | ?token.id=gte:X&serialnumber=gt:Y |\n| spender.id    | eq                  | Y       | | ?spender.id=Z |\n|               | ne                  | N       | | |\n|               | lt(e)               | Y       | | ?spender.id=lt:Z |\n|               | gt(e)               | Y       | | ?spender.id=gt:Z |\n\nNote: When searching across a range for individual NFTs a **serialnumber** with an additional **token.id** query filter must be provided.\nBoth filters must be a single occurrence of **gt(e)** or **lt(e)** which provide a lower and or upper boundary for search.\n",
+        "operationId": "listNftByAccountId",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/accountIdOrAliasOrEvmAddressPathParam"
+          },
+          {
+            "$ref": "#/components/parameters/tokenIdQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/serialNumberQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/spenderIdQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderQueryParamDesc"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Nfts"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/api/v1/accounts/{idOrAliasOrEvmAddress}/allowances/crypto": {
+      "get": {
+        "summary": "Get crypto allowances for an account info",
+        "description": "Returns information for all crypto allowances for an account.",
+        "operationId": "listCryptoAllowancesByAccountId",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/accountIdOrAliasOrEvmAddressPathParam"
+          },
+          {
+            "$ref": "#/components/parameters/spenderIdQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderQueryParamDesc"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CryptoAllowancesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/api/v1/accounts/{idOrAliasOrEvmAddress}/allowances/tokens": {
+      "get": {
+        "summary": "Get fungible token allowances for an account",
+        "description": "Returns information for fungible token allowances for an account.\n\n## Ordering\nThe order is governed by a combination of the spender id and the token id values, with spender id being the parent column.\nThe token id value governs its order within the given spender id.\n\nNote: The default order for this API is currently ASC\n\n## Filtering\nWhen filtering there are some restrictions enforced to ensure correctness and scalability.\n\n**The table below defines the restrictions and support for the token allowances endpoint**\n\n| Query Param   | Comparison Operator | Support | Description           | Example |\n| ------------- | ------------------- | ------- | --------------------- | ------- |\n| spender.id    | eq                  | Y       | Single occurrence only. | ?spender.id=X |\n|               | ne                  | N       | | |\n|               | lt(e)               | Y       | Single occurrence only. | ?spender.id=lte:X |\n|               | gt(e)               | Y       | Single occurrence only. | ?spender.id=gte:X |\n| token.id      | eq                  | Y       | Single occurrence only. Requires the presence of a **spender.id** query | ?token.id=lt:Y |\n|               | ne                  | N       | | |\n|               | lt(e)               | Y       | Single occurrence only. Requires the presence of an **lte** **spender.id** query | ?spender.id=lte:X&token.id=lt:Y |\n|               | gt(e)               | Y       | Single occurrence only. Requires the presence of an **gte** **spender.id** query | ?spender.id=gte:X&token.id=gt:Y |\n\nBoth filters must be a single occurrence of **gt(e)** or **lt(e)** which provide a lower and or upper boundary for search.\n",
+        "operationId": "listTokenAllowancesByAccountId",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/accountIdOrAliasOrEvmAddressPathParam"
+          },
+          {
+            "$ref": "#/components/parameters/spenderIdQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/tokenIdQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderQueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenAllowancesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/api/v1/balances": {
+      "get": {
+        "summary": "List account balances",
+        "description": "Returns a timestamped list of account balances on the network. This includes both HBAR and token balances for accounts.",
+        "operationId": "listAccountBalances",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/accountIdQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/accountBalanceQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderQueryParamDesc"
+          },
+          {
+            "$ref": "#/components/parameters/accountPublicKeyQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/timestampQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitQueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BalancesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          }
+        },
+        "tags": [
+          "balances"
+        ]
+      }
+    },
+    "/api/v1/blocks": {
+      "get": {
+        "summary": "List blocks",
+        "description": "Returns a list of blocks on the network.",
+        "operationId": "listBlocks",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/blockNumberQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/timestampQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderQueryParamDesc"
+          },
+          {
+            "$ref": "#/components/parameters/limitQueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlocksResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          }
+        },
+        "tags": [
+          "blocks"
+        ]
+      }
+    },
+    "/api/v1/blocks/{hashOrNumber}": {
+      "get": {
+        "summary": "Get block by hash or number",
+        "description": "Returns the block information by given hash or number.",
+        "operationId": "getByHashOrNumber",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/hashOrNumberPathParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Block"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "tags": [
+          "blocks"
+        ]
+      }
+    },
+    "/api/v1/contracts": {
+      "get": {
+        "summary": "List contract entities on network",
+        "description": "Returns a list of all contract entity items on the network.",
+        "operationId": "listContracts",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/contractIdQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderQueryParamDesc"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          }
+        },
+        "tags": [
+          "contracts"
+        ]
+      }
+    },
+    "/api/v1/contracts/{contractIdOrAddress}": {
+      "get": {
+        "summary": "Get contract by id",
+        "description": "Return the contract information given an id",
+        "operationId": "getContractById",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/contractIdPathParam"
+          },
+          {
+            "$ref": "#/components/parameters/timestampQueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "tags": [
+          "contracts"
+        ]
+      }
+    },
+    "/api/v1/contracts/{contractIdOrAddress}/results": {
+      "get": {
+        "summary": "List contract results from a contract on the network",
+        "description": "Returns a list of all ContractResults for a contract's function executions.",
+        "operationId": "listContractResults",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/contractIdPathParam"
+          },
+          {
+            "$ref": "#/components/parameters/fromQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderQueryParamDesc"
+          },
+          {
+            "$ref": "#/components/parameters/timestampQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/contractsBlockNumberQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/blockHashQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/transactionIndexQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/internalQueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractResultsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          }
+        },
+        "tags": [
+          "contracts"
+        ]
+      }
+    },
+    "/api/v1/contracts/{contractIdOrAddress}/results/{timestamp}": {
+      "get": {
+        "summary": "Get the contract result from a contract on the network executed at a given timestamp",
+        "description": "Returns a single ContractResult for a contract's function executions at a specific timestamp.",
+        "operationId": "getContractResultByIdAndTimestamp",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/contractIdPathParam"
+          },
+          {
+            "$ref": "#/components/parameters/timestampPathParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractResultResponse"
+                }
+              }
+            }
+          },
+          "206": {
+            "description": "Partial Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractResultResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "tags": [
+          "contracts"
+        ]
+      }
+    },
+    "/api/v1/contracts/results": {
+      "get": {
+        "summary": "List contract results from all contracts on the network",
+        "description": "Returns a list of all ContractResults for all contract's function executions.",
+        "operationId": "listAllContractsResults",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fromQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderQueryParamDesc"
+          },
+          {
+            "$ref": "#/components/parameters/timestampQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/contractsBlockNumberQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/blockHashQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/transactionIndexQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/internalQueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractResultsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          }
+        },
+        "tags": [
+          "contracts"
+        ]
+      }
+    },
+    "/api/v1/contracts/results/{transactionIdOrHash}": {
+      "get": {
+        "summary": "Get the contract result from a contract on the network for a given transactionId or ethereum transaction hash",
+        "description": "Returns a single ContractResult for a contract's function executions for a given transactionId or ethereum transaction hash.",
+        "operationId": "getContractResultByTransactionIdOrHash",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/transactionIdOrEthHashPathParam"
+          },
+          {
+            "$ref": "#/components/parameters/nonceQueryParamWithDefault"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractResultResponse"
+                }
+              }
+            }
+          },
+          "206": {
+            "description": "Partial Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractResultResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "tags": [
+          "contracts"
+        ]
+      }
+    },
+    "/api/v1/contracts/{contractIdOrAddress}/results/logs": {
+      "get": {
+        "summary": "List contract logs from a contract on the network",
+        "description": "Search the logs of a specific contract across multiple contract calls. Chained logs are not\nincluded but can be found by calling `/api/v1/contracts/{contractId}/results/{timestamp}`\nor `/api/v1/contracts/results/{transactionId}`. When searching by topic a timestamp parameter must be supplied\nand span a time range of at most seven days.\n\n## Ordering\nThe order is governed by the combination of timestamp and index values. If the index param is omitted, the order is determined by the timestamp only.\n\nNote: The default order for this API is currently DESC\n\n## Filtering\nWhen filtering there are some restrictions enforced to ensure correctness and scalability.\n\n**The table below defines the restrictions and support for the token allowances endpoint**\n\n| Query Param   | Comparison Operator | Support | Description           | Example |\n| ------------- | ------------------- | ------- | --------------------- | ------- |\n| index         | eq                  | Y       | Single occurrence only. Requires the presence of timestamp | ?index=X |\n|               | ne                  | N       | | |\n|               | lt(e)               | Y       | Single occurrence only. Requires the presence of timestamp | ?index=lte:X |\n|               | gt(e)               | Y       | Single occurrence only. Requires the presence of timestamp | ?index=gte:X |\n| timestamp     | eq                  | Y       | Single occurrence only. | ?timestamp=Y\n|               | ne                  | N       | | |\n|               | lt(e)               | Y       | Single occurrence only. Optional second timestamp **gt(e)** | ?timestamp=lte:Y\n|               | gt(e)               | Y       | Single occurrence only. Optional second timestamp **lt(e)** | ?timestamp=gte:Y\n\n\nBoth filters must be a single occurrence of **gt(e)** or **lt(e)** which provide a lower and or upper boundary for search.\n",
+        "operationId": "listContractLogs",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/contractIdPathParam"
+          },
+          {
+            "$ref": "#/components/parameters/logIndexQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderQueryParamDesc"
+          },
+          {
+            "$ref": "#/components/parameters/timestampQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/logTopic0QueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/logTopic1QueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/logTopic2QueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/logTopic3QueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractLogsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          }
+        },
+        "tags": [
+          "contracts"
+        ]
+      }
+    },
+    "/api/v1/contracts/results/logs": {
+      "get": {
+        "summary": "List contracts logs across many contracts on the network",
+        "description": "Search the logs across many contracts with multiple contract calls. Chained logs are not\nincluded but can be found by calling `/api/v1/contracts/{contractId}/results/{timestamp}`\nor `/api/v1/contracts/results/{transactionId}`. When searching by topic a timestamp parameter must be supplied\nand span a time range of at most seven days.\n\n## Ordering\nThe order is governed by the combination of timestamp and index values. If the index param is omitted, the order is determined by the timestamp only.\n\nNote: The default order for this API is currently DESC\n\n## Filtering\nWhen filtering there are some restrictions enforced to ensure correctness and scalability.\n\n**The table below defines the restrictions and support for the token allowances endpoint**\n\n| Query Param   | Comparison Operator | Support | Description           | Example |\n| ------------- | ------------------- | ------- | --------------------- | ------- |\n| index         | eq                  | Y       | Single occurrence only. Requires the presence of timestamp | ?index=X |\n|               | ne                  | N       | | |\n|               | lt(e)               | Y       | Single occurrence only. Requires the presence of timestamp | ?index=lte:X |\n|               | gt(e)               | Y       | Single occurrence only. Requires the presence of timestamp | ?index=gte:X |\n| timestamp     | eq                  | Y       | Single occurrence only. | ?timestamp=Y\n|               | ne                  | N       | | |\n|               | lt(e)               | Y       | Single occurrence only. Optional second timestamp **gt(e)** | ?timestamp=lte:Y\n|               | gt(e)               | Y       | Single occurrence only. Optional second timestamp **lt(e)** | ?timestamp=gte:Y\n\n\nBoth filters must be a single occurrence of **gt(e)** or **lt(e)** which provide a lower and or upper boundary for search.\n",
+        "operationId": "listContractsLogs",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/logIndexQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderQueryParamDesc"
+          },
+          {
+            "$ref": "#/components/parameters/timestampQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/logTopic0QueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/logTopic1QueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/logTopic2QueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/logTopic3QueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractLogsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          }
+        },
+        "tags": [
+          "contracts"
+        ]
+      }
+    },
+    "/api/v1/network/exchangerate": {
+      "get": {
+        "summary": "Get the network exchange rate to estimate costs",
+        "description": "Returns the network's exchange rate, current and next.",
+        "operationId": "getNetworkExchangeRate",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/timestampQueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NetworkExchangeRateSetResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServiceUnavailableError"
+          }
+        },
+        "tags": [
+          "network"
+        ]
+      }
+    },
+    "/api/v1/network/fees": {
+      "get": {
+        "summary": "Get the network fees",
+        "description": "Returns the estimated gas in tinybars per each transaction type. Default order is ASC. Currently only `ContractCall`, `ContractCreate` and `EthereumTransaction` transaction types are supported.",
+        "operationId": "getNetworkFees",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/timestampQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderQueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NetworkFeesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          },
+          "500": {
+            "$ref": "#/components/responses/ServiceUnavailableError"
+          }
+        },
+        "tags": [
+          "network"
+        ]
+      }
+    },
+    "/api/v1/network/nodes": {
+      "get": {
+        "summary": "Get the network address book nodes",
+        "description": "Returns the network's list of nodes used in consensus",
+        "operationId": "getNetworkNodes",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fileIdQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/nodeIdQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderQueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NetworkNodesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          }
+        },
+        "tags": [
+          "network"
+        ]
+      }
+    },
+    "/api/v1/network/supply": {
+      "get": {
+        "summary": "Get the network supply",
+        "description": "Returns the network's released supply of hbars",
+        "operationId": "getNetworkSupply",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/timestampQueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NetworkSupplyResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "tags": [
+          "network"
+        ]
+      }
+    },
+    "/api/v1/schedules": {
+      "get": {
+        "summary": "List schedules entities",
+        "description": "Lists schedules on the network that govern the execution logic of scheduled transactions. This includes executed and non executed schedules.",
+        "operationId": "listSchedules",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/accountIdQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/scheduleIdQueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchedulesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          }
+        },
+        "tags": [
+          "schedules"
+        ]
+      }
+    },
+    "/api/v1/schedules/{scheduleId}": {
+      "get": {
+        "summary": "Get schedule by id",
+        "description": "Returns schedule information based on the given schedule id",
+        "operationId": "getScheduleById",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/scheduleIdPathParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Schedule"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "tags": [
+          "schedules"
+        ]
+      }
+    },
+    "/api/v1/transactions": {
+      "get": {
+        "summary": "List transactions",
+        "description": "Lists transactions on the network. This includes successful and unsuccessful transactions.",
+        "operationId": "listTransactions",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/accountIdQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderQueryParamDesc"
+          },
+          {
+            "$ref": "#/components/parameters/timestampQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/transactionTypeQueryParam"
+          },
+          {
+            "name": "result",
+            "in": "query",
+            "description": "The transaction success type.",
+            "schema": {
+              "enum": [
+                "success",
+                "fail"
+              ]
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "The transaction account balance modification type.",
+            "schema": {
+              "enum": [
+                "credit",
+                "debit"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          }
+        },
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/api/v1/transactions/{transactionId}": {
+      "get": {
+        "summary": "Get transaction by id",
+        "description": "Returns transaction information based on the given transaction id",
+        "operationId": "getTransactionById",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/transactionIdPathParam"
+          },
+          {
+            "$ref": "#/components/parameters/nonceQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/scheduledQueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionByIdResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/api/v1/transactions/{transactionId}/stateproof": {
+      "get": {
+        "summary": "Get stateproof information",
+        "description": "Returns the  contents of the address book file, signature files, and record file that can be used to validate the transaction occurred on the Hedera network given transaction id.",
+        "operationId": "getStateproofInfo",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/transactionIdPathParam"
+          },
+          {
+            "$ref": "#/components/parameters/nonceQueryParamWithDefault"
+          },
+          {
+            "$ref": "#/components/parameters/scheduledQueryParamWithDefault"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StateProofResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          },
+          "404": {
+            "$ref": "#/components/responses/TransactionNotFound"
+          },
+          "502": {
+            "$ref": "#/components/responses/ServiceUnavailableError"
+          }
+        },
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/api/v1/topics/{topicId}/messages": {
+      "get": {
+        "summary": "List topic messages by id",
+        "description": "Returns the list of topic messages for the given topic id.",
+        "operationId": "listTopicMessagesById",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/topicIdPathParam"
+          },
+          {
+            "name": "sequencenumber",
+            "in": "query",
+            "example": 2,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/timestampQueryParam"
+          },
+          {
+            "name": "encoding",
+            "in": "query",
+            "example": "base64",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/limitQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderQueryParamDesc"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TopicMessagesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          },
+          "404": {
+            "$ref": "#/components/responses/TopicNotFound"
+          }
+        },
+        "tags": [
+          "topics"
+        ]
+      }
+    },
+    "/api/v1/topics/{topicId}/messages/{sequenceNumber}": {
+      "get": {
+        "summary": "Get topic message by id and sequence number",
+        "description": "Returns a single topic message the given topic id and sequence number.",
+        "operationId": "getTopicMessageByIdAndSequenceNumber",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/topicIdPathParam"
+          },
+          {
+            "name": "sequencenumber",
+            "in": "path",
+            "required": true,
+            "description": "Topic message sequence number",
+            "example": 2,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TopicMessagesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "tags": [
+          "topics"
+        ]
+      }
+    },
+    "/api/v1/topics/messages/{consensusTimestamp}": {
+      "get": {
+        "summary": "Get topic message by consensusTimestamp",
+        "description": "Returns a topic message the given the consensusTimestamp.",
+        "operationId": "getTopicMessagesByConsensusTimestamp",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/timestampPathParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TopicMessage"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "tags": [
+          "topics"
+        ]
+      }
+    },
+    "/api/v1/tokens": {
+      "get": {
+        "summary": "List tokens",
+        "description": "Returns a list of tokens on the network.",
+        "operationId": "listTokens",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/publicKeyQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/tokenIdQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/tokenTypeQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/accountIdQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderQueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokensResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          }
+        },
+        "tags": [
+          "tokens"
+        ]
+      }
+    },
+    "/api/v1/tokens/{tokenId}": {
+      "get": {
+        "summary": "Get token by id",
+        "description": "Returns token entity information given the id",
+        "operationId": "getTokenById",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/tokenIdPathParam"
+          },
+          {
+            "$ref": "#/components/parameters/tokenInfoTimestampQueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenInfo"
+                },
+                "examples": {
+                  "FungibleToken": {
+                    "value": {
+                      "admin_key": {
+                        "_type": "ProtobufEncoded",
+                        "key": "7b2231222c2231222c2231227d"
+                      },
+                      "auto_renew_account": "0.1.2",
+                      "auto_renew_period": null,
+                      "created_timestamp": "1234567890.000000001",
+                      "deleted": false,
+                      "decimals": 1000,
+                      "expiry_timestamp": null,
+                      "freeze_default": false,
+                      "freeze_key": {
+                        "_type": "ProtobufEncoded",
+                        "key": "7b2231222c2231222c2231227d"
+                      },
+                      "initial_supply": 1000000,
+                      "kyc_key": {
+                        "_type": "ProtobufEncoded",
+                        "key": "7b2231222c2231222c2231227d"
+                      },
+                      "max_supply": 9223372036854776000,
+                      "memo": "token memo",
+                      "modified_timestamp": "1234567890.000000001",
+                      "name": "Token name",
+                      "pause_key": {
+                        "_type": "ProtobufEncoded",
+                        "key": "7b2231222c2231222c2231227d"
+                      },
+                      "pause_status": "UNPAUSED",
+                      "supply_key": {
+                        "_type": "ProtobufEncoded",
+                        "key": "7b2231222c2231222c2231227d"
+                      },
+                      "supply_type": "INFINITE",
+                      "symbol": "ORIGINALRDKSE",
+                      "token_id": "0.10.1",
+                      "total_supply": 1000000,
+                      "treasury_account_id": "0.1.2",
+                      "type": "FUNGIBLE_COMMON",
+                      "wipe_key": {
+                        "_type": "ProtobufEncoded",
+                        "key": "7b2231222c2231222c2231227d"
+                      },
+                      "custom_fees": {
+                        "created_timestamp": "1234567890.000000001",
+                        "fixed_fees": [
+                          {
+                            "amount": 100,
+                            "collector_account_id": "0.1.5",
+                            "denominating_token_id": "0.10.8"
+                          }
+                        ],
+                        "fractional_fees": [
+                          {
+                            "amount": {
+                              "numerator": 12,
+                              "denominator": 29
+                            },
+                            "collector_account_id": "0.1.6",
+                            "denominating_token_id": "0.10.9",
+                            "maximum": 120,
+                            "minimum": 30,
+                            "net_of_transfers": true
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "NonFungibleToken": {
+                    "value": {
+                      "admin_key": {
+                        "_type": "ProtobufEncoded",
+                        "key": "7b2231222c2231222c2231227d"
+                      },
+                      "auto_renew_account": "0.1.2",
+                      "auto_renew_period": null,
+                      "created_timestamp": "1234567890.000000001",
+                      "deleted": false,
+                      "decimals": 0,
+                      "expiry_timestamp": null,
+                      "freeze_default": false,
+                      "freeze_key": {
+                        "_type": "ProtobufEncoded",
+                        "key": "7b2231222c2231222c2231227d"
+                      },
+                      "initial_supply": 0,
+                      "kyc_key": {
+                        "_type": "ProtobufEncoded",
+                        "key": "7b2231222c2231222c2231227d"
+                      },
+                      "max_supply": 9223372036854776000,
+                      "memo": "token memo",
+                      "modified_timestamp": "1234567890.000000001",
+                      "name": "Token name",
+                      "pause_key": {
+                        "_type": "ProtobufEncoded",
+                        "key": "7b2231222c2231222c2231227d"
+                      },
+                      "pause_status": "UNPAUSED",
+                      "supply_key": {
+                        "_type": "ProtobufEncoded",
+                        "key": "7b2231222c2231222c2231227d"
+                      },
+                      "supply_type": "INFINITE",
+                      "symbol": "ORIGINALRDKSE",
+                      "token_id": "0.10.1",
+                      "total_supply": 1000000,
+                      "treasury_account_id": "0.1.2",
+                      "type": "NON_FUNGIBLE_UNIQUE",
+                      "wipe_key": {
+                        "_type": "ProtobufEncoded",
+                        "key": "7b2231222c2231222c2231227d"
+                      },
+                      "custom_fees": {
+                        "created_timestamp": "1234567890.000000001",
+                        "fixed_fees": [
+                          {
+                            "amount": 100,
+                            "collector_account_id": "0.1.5",
+                            "denominating_token_id": "0.10.6"
+                          }
+                        ],
+                        "royalty_fees": [
+                          {
+                            "amount": {
+                              "numerator": 15,
+                              "denominator": 37
+                            },
+                            "collector_account_id": "0.1.6",
+                            "fallback_fee": {
+                              "amount": 100,
+                              "denominating_token_id": "0.10.7"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "tags": [
+          "tokens"
+        ]
+      }
+    },
+    "/api/v1/tokens/{tokenId}/balances": {
+      "get": {
+        "summary": "List token balances",
+        "description": "Returns a list of token balances given the id. This represents the Token supply distribution across the network",
+        "operationId": "listTokenBalancesById",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/tokenIdPathParam"
+          },
+          {
+            "$ref": "#/components/parameters/accountIdQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/accountBalanceQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/accountPublicKeyQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/timestampQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitQueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenBalancesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          }
+        },
+        "tags": [
+          "tokens"
+        ]
+      }
+    },
+    "/api/v1/tokens/{tokenId}/nfts": {
+      "get": {
+        "summary": "List nfts",
+        "description": "Returns a list of non-fungible tokens",
+        "operationId": "listNfts",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/tokenIdPathParam"
+          },
+          {
+            "$ref": "#/components/parameters/accountIdQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderQueryParamDesc"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Nfts"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "tags": [
+          "tokens"
+        ]
+      }
+    },
+    "/api/v1/tokens/{tokenId}/nfts/{serialNumber}": {
+      "get": {
+        "summary": "Get nft info",
+        "description": "Returns information for a non-fungible token",
+        "operationId": "listNftBySerialnumber",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/tokenIdPathParam"
+          },
+          {
+            "$ref": "#/components/parameters/serialNumberPathParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Nft"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "tags": [
+          "tokens"
+        ]
+      }
+    },
+    "/api/v1/tokens/{tokenId}/nfts/{serialNumber}/transactions": {
+      "get": {
+        "summary": "Get an nfts transction history",
+        "description": "Returns a list of transactions for a given non-fungible token",
+        "operationId": "listNftTransactions",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/tokenIdPathParam"
+          },
+          {
+            "$ref": "#/components/parameters/serialNumberPathParam"
+          },
+          {
+            "$ref": "#/components/parameters/limitQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderQueryParamDesc"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NftTransactionHistory"
+                }
+              }
+            }
+          },
+          "206": {
+            "description": "Partial Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NftTransactionHistory"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidParameterError"
+          }
+        },
+        "tags": [
+          "tokens"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "accounts",
+      "description": "The accounts object represents the information associated with an account entity and returns a list of account information.",
+      "externalDocs": {
+        "url": "https://docs.hedera.com/guides/docs/mirror-node-api/cryptocurrency-api#accounts"
+      }
+    },
+    {
+      "name": "balances",
+      "description": "The balance object represents the balance of accounts on the Hedera network.",
+      "externalDocs": {
+        "url": "https://docs.hedera.com/guides/docs/mirror-node-api/cryptocurrency-api#balances"
+      }
+    },
+    {
+      "name": "contracts",
+      "description": "The contracts objects represents the information associated with contract entities."
+    },
+    {
+      "name": "schedules",
+      "description": "The schedules object represents the information associated with a schedule entity."
+    },
+    {
+      "name": "transactions",
+      "description": "The transaction object represents the transactions processed on the Hedera network.",
+      "externalDocs": {
+        "url": "https://docs.hedera.com/guides/docs/mirror-node-api/cryptocurrency-api#transactions"
+      }
+    },
+    {
+      "name": "topics",
+      "description": "The topics object represents the information associated with a topic entity and returns topic messages information.",
+      "externalDocs": {
+        "url": "https://docs.hedera.com/guides/docs/mirror-node-api/cryptocurrency-api#topic-messages"
+      }
+    },
+    {
+      "name": "tokens",
+      "description": "The tokens object represents the information associated with a token entity and returns a list of token information."
+    }
+  ],
+  "info": {
+    "title": "Hedera Mirror Node REST API",
+    "version": "0.58.0",
+    "license": {
+      "name": "Apache-2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "description": "The Mirror Node REST API offers the ability to query cryptocurrency transactions and account information from a Hedera managed mirror node.\n\nAvailable versions: [v1](/api/v1/docs). Base url: [/api/v1](/api/v1)",
+    "contact": {
+      "name": "Hedera Mirror Node Team",
+      "email": "mirrornode@hedera.com",
+      "url": "https://github.com/hashgraph/hedera-mirror-node"
+    }
+  },
+  "externalDocs": {
+    "description": "Hedera REST API Docs",
+    "url": "https://docs.hedera.com/guides/docs/mirror-node-api/cryptocurrency-api"
+  },
+  "servers": [
+    {
+      "description": "The current REST API server",
+      "url": ""
+    },
+    {
+      "description": "The production REST API servers",
+      "url": "{scheme}://{network}.mirrornode.hedera.com",
+      "variables": {
+        "scheme": {
+          "default": "https",
+          "description": "The URI scheme",
+          "enum": [
+            "http",
+            "https"
+          ]
+        },
+        "network": {
+          "default": "testnet",
+          "description": "The Hedera network in use",
+          "enum": [
+            "mainnet-public",
+            "mainnet",
+            "previewnet",
+            "testnet"
+          ]
+        }
+      }
+    }
+  ],
+  "components": {
+    "schemas": {
+      "AccountAlias": {
+        "description": "Account alias in the format of 'shard.realm.alias', 'realm.alias', or 'alias'. 'alias' is the RFC4648 no-padding base32 encoded string of the account's alias.",
+        "type": "string",
+        "pattern": "^(\\d{1,5}\\.){0,2}(?:[A-Z2-7]{8})*(?:[A-Z2-7]{2}|[A-Z2-7]{4,5}|[A-Z2-7]{7,8})$"
+      },
+      "AccountsResponse": {
+        "type": "object",
+        "properties": {
+          "accounts": {
+            "$ref": "#/components/schemas/Accounts"
+          },
+          "links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "Allowance": {
+        "type": "object",
+        "properties": {
+          "amount_granted": {
+            "description": "The granted amount of the spender's allowance.",
+            "format": "int64",
+            "type": "integer",
+            "example": 100
+          },
+          "owner": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "spender": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "timestamp": {
+            "$ref": "#/components/schemas/TimestampRange"
+          }
+        }
+      },
+      "BalancesResponse": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "$ref": "#/components/schemas/TimestampNullable"
+          },
+          "balances": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountBalance"
+            }
+          },
+          "links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "ContractResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Contract"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "bytecode": {
+                "type": "string",
+                "nullable": true,
+                "format": "binary",
+                "description": "The contract bytecode in hex",
+                "example": "0x01021a1fdc9b"
+              }
+            }
+          }
+        ]
+      },
+      "ContractsResponse": {
+        "type": "object",
+        "properties": {
+          "contracts": {
+            "$ref": "#/components/schemas/Contracts"
+          },
+          "links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "ContractResultResponse": {
+        "type": "object",
+        "properties": {
+          "contracts": {
+            "$ref": "#/components/schemas/ContractResultDetails"
+          }
+        }
+      },
+      "ContractResultsResponse": {
+        "type": "object",
+        "properties": {
+          "contracts": {
+            "$ref": "#/components/schemas/ContractResults"
+          },
+          "links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "ContractLogsResponse": {
+        "type": "object",
+        "properties": {
+          "logs": {
+            "$ref": "#/components/schemas/ContractLogs"
+          }
+        }
+      },
+      "CryptoAllowancesResponse": {
+        "type": "object",
+        "properties": {
+          "allowances": {
+            "$ref": "#/components/schemas/CryptoAllowances"
+          },
+          "links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "NetworkExchangeRateSetResponse": {
+        "type": "object",
+        "properties": {
+          "current_rate": {
+            "$ref": "#/components/schemas/ExchangeRate"
+          },
+          "next_rate": {
+            "$ref": "#/components/schemas/ExchangeRate"
+          },
+          "timestamp": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        }
+      },
+      "NetworkFeesResponse": {
+        "type": "object",
+        "properties": {
+          "fees": {
+            "$ref": "#/components/schemas/NetworkFees"
+          },
+          "timestamp": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        }
+      },
+      "NetworkNodesResponse": {
+        "type": "object",
+        "properties": {
+          "nodes": {
+            "$ref": "#/components/schemas/NetworkNodes"
+          },
+          "links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "NetworkSupplyResponse": {
+        "type": "object",
+        "properties": {
+          "released_supply": {
+            "description": "The network's released supply of hbars in tinybars",
+            "example": "3999999999999999949",
+            "type": "string"
+          },
+          "timestamp": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              {
+                "description": "The consensus timestamp at which the released supply was valid"
+              }
+            ]
+          },
+          "total_supply": {
+            "description": "The network's total supply of hbars in tinybars",
+            "example": "5000000000000000000",
+            "type": "string"
+          }
+        }
+      },
+      "SchedulesResponse": {
+        "type": "object",
+        "properties": {
+          "schedules": {
+            "$ref": "#/components/schemas/Schedules"
+          },
+          "links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "BlocksResponse": {
+        "type": "object",
+        "properties": {
+          "schedules": {
+            "$ref": "#/components/schemas/Blocks"
+          },
+          "links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "StateProofResponse": {
+        "type": "object",
+        "properties": {
+          "transactions": {
+            "$ref": "#/components/schemas/StateProofFiles"
+          }
+        }
+      },
+      "TokenAllowancesResponse": {
+        "type": "object",
+        "properties": {
+          "allowances": {
+            "$ref": "#/components/schemas/TokenAllowances"
+          },
+          "links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "TokenBalancesResponse": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "$ref": "#/components/schemas/TimestampNullable"
+          },
+          "balances": {
+            "$ref": "#/components/schemas/TokenDistribution"
+          },
+          "links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "TokensResponse": {
+        "type": "object",
+        "properties": {
+          "tokens": {
+            "$ref": "#/components/schemas/Tokens"
+          },
+          "links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "TopicMessagesResponse": {
+        "type": "object",
+        "properties": {
+          "messages": {
+            "$ref": "#/components/schemas/TopicMessages"
+          },
+          "links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "TransactionByIdResponse": {
+        "type": "object",
+        "properties": {
+          "transactions": {
+            "$ref": "#/components/schemas/TransactionDetails"
+          }
+        }
+      },
+      "TransactionsResponse": {
+        "type": "object",
+        "properties": {
+          "transactions": {
+            "$ref": "#/components/schemas/Transactions"
+          },
+          "links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "AccountInfo": {
+        "type": "object",
+        "required": [
+          "account",
+          "balance",
+          "expiry_timestamp",
+          "auto_renew_period",
+          "key",
+          "deleted",
+          "max_automatic_token_associations",
+          "memo",
+          "receiver_sig_required"
+        ],
+        "properties": {
+          "account": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "alias": {
+            "$ref": "#/components/schemas/Alias"
+          },
+          "auto_renew_period": {
+            "nullable": true
+          },
+          "balance": {
+            "$ref": "#/components/schemas/Balance"
+          },
+          "deleted": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "ethereum_nonce": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "evm_address": {
+            "$ref": "#/components/schemas/EvmAddressNullable"
+          },
+          "expiry_timestamp": {
+            "$ref": "#/components/schemas/TimestampNullable"
+          },
+          "key": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "max_automatic_token_associations": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "memo": {
+            "type": "string",
+            "nullable": true
+          },
+          "receiver_sig_required": {
+            "nullable": true,
+            "type": "boolean"
+          }
+        },
+        "example": {
+          "account": "0.0.8",
+          "alias": "HIQQEXWKW53RKN4W6XXC4Q232SYNZ3SZANVZZSUME5B5PRGXL663UAQA",
+          "auto_renew_period": null,
+          "balance": {
+            "timestamp": "0.000002345",
+            "balance": 80,
+            "tokens": [
+              {
+                "token_id": "0.0.200001",
+                "balance": 8
+              }
+            ]
+          },
+          "deleted": false,
+          "ethereum_nonce": 10,
+          "evm_address": "0xac384c53f03855fa1b3616052f8ba32c6c2a2fec",
+          "expiry_timestamp": null,
+          "key": null,
+          "max_automatic_token_associations": 200,
+          "memo": "entity memo",
+          "receiver_sig_required": false
+        }
+      },
+      "Accounts": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/AccountInfo"
+        }
+      },
+      "AccountBalance": {
+        "type": "object",
+        "required": [
+          "account",
+          "balance",
+          "tokens"
+        ],
+        "properties": {
+          "account": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "balance": {
+            "type": "number"
+          },
+          "tokens": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TokenBalance"
+            }
+          }
+        },
+        "example": {
+          "account": "0.15.10",
+          "balance": 80,
+          "tokens": [
+            {
+              "token_id": "0.0.200001",
+              "balance": 8
+            }
+          ]
+        }
+      },
+      "AccountBalanceTransactions": {
+        "type": "object",
+        "properties": {
+          "transactions": {
+            "$ref": "#/components/schemas/Transactions"
+          },
+          "balance": {
+            "$ref": "#/components/schemas/Balance"
+          },
+          "account": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "alias": {
+            "$ref": "#/components/schemas/Alias"
+          },
+          "ethereum_nonce": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "evm_address": {
+            "$ref": "#/components/schemas/EvmAddressNullable"
+          },
+          "expiry_timestamp": {
+            "$ref": "#/components/schemas/TimestampNullable"
+          },
+          "auto_renew_period": {
+            "nullable": true
+          },
+          "key": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "deleted": {
+            "type": "boolean"
+          },
+          "max_automatic_token_associations": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "memo": {
+            "type": "string"
+          },
+          "receiver_sig_required": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "Alias": {
+        "description": "RFC4648 no-padding base32 encoded account alias",
+        "type": "string",
+        "pattern": "^(?:[A-Z2-7]{8})*(?:[A-Z2-7]{2}|[A-Z2-7]{4,5}|[A-Z2-7]{7,8})$",
+        "nullable": true,
+        "example": "HIQQEXWKW53RKN4W6XXC4Q232SYNZ3SZANVZZSUME5B5PRGXL663UAQA"
+      },
+      "Balance": {
+        "type": "object",
+        "required": [
+          "timestamp",
+          "balance",
+          "tokens"
+        ],
+        "properties": {
+          "timestamp": {
+            "$ref": "#/components/schemas/TimestampNullable"
+          },
+          "balance": {
+            "type": "number",
+            "nullable": true
+          },
+          "tokens": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "token_id": {
+                  "$ref": "#/components/schemas/EntityId"
+                },
+                "balance": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        },
+        "nullable": true,
+        "example": {
+          "timestamp": "0.000002345",
+          "balance": 80,
+          "tokens": [
+            {
+              "token_id": "0.0.200001",
+              "balance": 8
+            }
+          ]
+        }
+      },
+      "Bloom": {
+        "example": "0x549358c4c2e573e02410ef7b5a5ffa5f36dd7398",
+        "format": "binary",
+        "nullable": true,
+        "type": "string"
+      },
+      "ChunkInfo": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "initial_transaction_id": {
+            "$ref": "#/components/schemas/TransactionId"
+          },
+          "number": {
+            "example": 1,
+            "type": "integer"
+          },
+          "total": {
+            "example": 2,
+            "type": "integer"
+          }
+        }
+      },
+      "Contract": {
+        "type": "object",
+        "properties": {
+          "admin_key": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "auto_renew_account": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "auto_renew_period": {
+            "type": "number",
+            "nullable": true,
+            "example": null
+          },
+          "contract_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "created_timestamp": {
+            "$ref": "#/components/schemas/TimestampNullable"
+          },
+          "deleted": {
+            "type": "boolean",
+            "example": false
+          },
+          "evm_address": {
+            "$ref": "#/components/schemas/EvmAddress"
+          },
+          "expiration_timestamp": {
+            "$ref": "#/components/schemas/TimestampNullable"
+          },
+          "file_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "max_automatic_token_associations": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "memo": {
+            "example": "contract memo",
+            "type": "string"
+          },
+          "obtainer_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "permanent_removal": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "proxy_account_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "timestamp": {
+            "$ref": "#/components/schemas/TimestampRange"
+          }
+        }
+      },
+      "Contracts": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Contract"
+        }
+      },
+      "ContractLog": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ContractResultLog"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "root_contract_id": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/EntityId"
+                  },
+                  {
+                    "description": "The executed contract that created this contract log"
+                  }
+                ]
+              },
+              "timestamp": {
+                "$ref": "#/components/schemas/Timestamp"
+              }
+            }
+          }
+        ]
+      },
+      "ContractLogTopics": {
+        "description": "A list of hex encoded topics associated with this log event",
+        "example": [
+          "0xf4757a49b326036464bec6fe419a4ae38c8a02ce3e68bf0809674f6aab8ad300"
+        ],
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "ContractResult": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "description": "The number of tinybars sent to the function",
+            "example": 10,
+            "format": "int64",
+            "nullable": true,
+            "type": "integer"
+          },
+          "bloom": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Bloom"
+              },
+              {
+                "description": "The hex encoded bloom filter of the contract result"
+              }
+            ]
+          },
+          "call_result": {
+            "description": "The hex encoded result returned by the function",
+            "example": "0x2b048531b38d2882e86044bc972e940ee0a01938",
+            "nullable": true,
+            "type": "string"
+          },
+          "contract_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "created_contract_ids": {
+            "description": "The network's released supply of hbars in tinybars",
+            "items": {
+              "$ref": "#/components/schemas/EntityId"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "error_message": {
+            "description": "The message when an error occurs during smart contract execution",
+            "example": "Out of gas",
+            "nullable": true,
+            "type": "string"
+          },
+          "from": {
+            "$ref": "#/components/schemas/EvmAddress"
+          },
+          "function_parameters": {
+            "description": "The hex encoded parameters passed to the function",
+            "example": "0xbb9f02dc6f0e3289f57a1f33b71c73aa8548ab8b",
+            "nullable": true,
+            "type": "string"
+          },
+          "gas_limit": {
+            "description": "The maximum units of gas allowed for contract execution",
+            "example": 100000,
+            "format": "int64",
+            "type": "integer"
+          },
+          "gas_used": {
+            "description": "The units of gas used to execute contract",
+            "example": 1000,
+            "format": "int64",
+            "nullable": true,
+            "type": "integer"
+          },
+          "hash": {
+            "description": "A hex encoded 32 byte hash and it is only populated for Ethereum transaction case",
+            "example": "0xfebbaa29c513d124a6377246ea3506ad917d740c21a88f61a1c55ba338fc2bb1",
+            "nullable": true,
+            "type": "string"
+          },
+          "result": {
+            "description": "The result of the transaction",
+            "example": "SUCCESS",
+            "type": "string"
+          },
+          "status": {
+            "description": "The status of the transaction, 0x1 for a SUCCESS transaction and 0x0 for all else",
+            "example": 1,
+            "type": "string"
+          },
+          "timestamp": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "to": {
+            "$ref": "#/components/schemas/EvmAddressNullable"
+          }
+        }
+      },
+      "ContractResultDetails": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ContractResult"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "access_list": {
+                "description": "The hex encoded access_list of the wrapped ethereum transaction",
+                "nullable": true,
+                "type": "string",
+                "example": "0xabcd"
+              },
+              "block_gas_used": {
+                "description": "The total amount of gas used in the block",
+                "example": 2000,
+                "format": "int64",
+                "nullable": true,
+                "type": "integer"
+              },
+              "block_hash": {
+                "description": "The hex encoded block (record file chain) hash",
+                "example": "0x6ceecd8bb224da491",
+                "nullable": true,
+                "type": "string"
+              },
+              "block_number": {
+                "description": "The block number. Since Hedera does not have the native concept of blocks, this counts the number of record files seen since the mirror node's configured start date. This can vary between mirror nodes that use different start dates.",
+                "example": 10,
+                "format": "int64",
+                "nullable": true,
+                "type": "integer"
+              },
+              "chain_id": {
+                "description": "The hex encoded chain_id of the wrapped ethereum transaction",
+                "nullable": true,
+                "type": "string",
+                "example": "0x0127"
+              },
+              "hash": {
+                "description": "The hex encoded transaction hash",
+                "example": "0x3531396130303866616264653464",
+                "type": "string"
+              },
+              "gas_price": {
+                "description": "The hex encoded gas_price of the wrapped ethereum transaction",
+                "nullable": true,
+                "type": "string",
+                "example": "0x4a817c800"
+              },
+              "logs": {
+                "$ref": "#/components/schemas/ContractResultLogs"
+              },
+              "max_fee_per_gas": {
+                "description": "The hex encoded max_fee_per_gas of the wrapped ethereum transaction",
+                "nullable": true,
+                "type": "string",
+                "example": "0x5"
+              },
+              "max_priority_fee_per_gas": {
+                "description": "The hex encoded max_priority_fee_per_gas of the wrapped ethereum transaction",
+                "nullable": true,
+                "type": "string",
+                "example": "0x100"
+              },
+              "nonce": {
+                "description": "The nonce of the wrapped ethereum transaction",
+                "nullable": true,
+                "format": "int64",
+                "type": "integer",
+                "example": 1
+              },
+              "r": {
+                "description": "The hex encoded signature_r of the wrapped ethereum transaction",
+                "nullable": true,
+                "type": "string",
+                "example": "0xd693b532a80fed6392b428604171fb32fdbf953728a3a7ecc7d4062b1652c043"
+              },
+              "s": {
+                "description": "The hex encoded signature_s of the wrapped ethereum transaction",
+                "nullable": true,
+                "type": "string",
+                "example": "0x24e9c602ac800b983b035700a14b23f78a253ab762deab5dc27e3555a750b355"
+              },
+              "state_changes": {
+                "$ref": "#/components/schemas/ContractResultStateChanges"
+              },
+              "transaction_index": {
+                "description": "The position of the transaction in the block",
+                "nullable": true,
+                "format": "int64",
+                "type": "integer",
+                "example": 1
+              },
+              "type": {
+                "description": "The type of the wrapped ethereum transaction, 0 (Pre-Eip1559) or 2 (Post-Eip1559)",
+                "nullable": true,
+                "type": "integer",
+                "example": 2
+              },
+              "v": {
+                "description": "The recovery_id of the wrapped ethereum transaction",
+                "nullable": true,
+                "type": "integer",
+                "example": 1
+              }
+            }
+          }
+        ]
+      },
+      "ContractResultLog": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "description": "The hex encoded EVM address of the contract",
+            "example": "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "pattern": "^0x[0-9A-Fa-f]{40}$",
+            "type": "string"
+          },
+          "bloom": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Bloom"
+              },
+              {
+                "description": "The hex encoded bloom filter of the contract log"
+              }
+            ]
+          },
+          "contract_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "data": {
+            "description": "The hex encoded data of the contract log",
+            "example": "0x00000000000000000000000000000000000000000000000000000000000000fa",
+            "nullable": true,
+            "type": "string"
+          },
+          "index": {
+            "description": "The index of the contract log in the chain of logs for an execution",
+            "example": 0,
+            "type": "integer"
+          },
+          "topics": {
+            "$ref": "#/components/schemas/ContractLogTopics"
+          }
+        }
+      },
+      "ContractResultLogs": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/ContractResultLog"
+        }
+      },
+      "ContractResultStateChange": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/EvmAddress"
+          },
+          "contract_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "slot": {
+            "description": "The hex encoded storage slot changed.",
+            "format": "binary",
+            "example": "0x00000000000000000000000000000000000000000000000000000000000000fa",
+            "type": "string"
+          },
+          "value_read": {
+            "description": "The hex encoded value read from the storage slot.",
+            "example": "0x97c1fc0a6ed5551bc831571325e9bdb365d06803100dc20648640ba24ce69750",
+            "format": "binary",
+            "type": "string"
+          },
+          "value_written": {
+            "description": "The hex encoded value written to the slot. `null` implies no value written.",
+            "example": "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925",
+            "format": "binary",
+            "nullable": true,
+            "type": "string"
+          }
+        }
+      },
+      "ContractResultStateChanges": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/ContractResultStateChange"
+        }
+      },
+      "ContractResults": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/ContractResult"
+        }
+      },
+      "ContractLogs": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/ContractLog"
+        }
+      },
+      "CustomFees": {
+        "type": "object",
+        "properties": {
+          "created_timestamp": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "fixed_fees": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FixedFee"
+            }
+          },
+          "fractional_fees": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FractionalFee"
+            }
+          },
+          "royalty_fees": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoyaltyFee"
+            }
+          }
+        }
+      },
+      "CryptoAllowance": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Allowance"
+          },
+          {
+            "properties": {
+              "amount_granted": {
+                "description": "The granted amount of the spender's allowance in tinybars."
+              }
+            }
+          }
+        ]
+      },
+      "CryptoAllowances": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/CryptoAllowance"
+        }
+      },
+      "EntityId": {
+        "type": "string",
+        "description": "Network entity ID in the format of `shard.realm.num`",
+        "pattern": "^\\d{1,10}\\.\\d{1,10}\\.\\d{1,10}$",
+        "example": "0.1.2",
+        "nullable": true
+      },
+      "EntityIdQuery": {
+        "type": "string",
+        "pattern": "^((gte?|lte?|eq|ne)\\:)?(\\d{1,10}\\.\\d{1,10}\\.)?\\d{1,10}$"
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "_status": {
+            "type": "object",
+            "properties": {
+              "messages": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "HederaHash": {
+        "type": "string",
+        "description": "A hex encoded hedera transaction hash.",
+        "minLength": 96,
+        "maxLength": 98,
+        "pattern": "^(0x)?[A-Fa-f0-9]{96}$"
+      },
+      "EthereumHash": {
+        "type": "string",
+        "description": "A hex encoded ethereum transaction hash.",
+        "minLength": 64,
+        "maxLength": 66,
+        "pattern": "^(0x)?[A-Fa-f0-9]{64}$"
+      },
+      "PositiveNumber": {
+        "type": "integer",
+        "format": "int64",
+        "description": "A positive number.",
+        "minimum": 0
+      },
+      "EvmAddress": {
+        "type": "string",
+        "description": "A network entity encoded as an EVM address in hex.",
+        "format": "binary",
+        "minLength": 40,
+        "maxLength": 42,
+        "pattern": "^(0x)?[A-Fa-f0-9]{40}$",
+        "example": "0000000000000000000000000000000000001f41"
+      },
+      "EvmAddressWithShardRealm": {
+        "type": "string",
+        "description": "A network entity encoded as an EVM address in hex.",
+        "format": "binary",
+        "minLength": 40,
+        "maxLength": 60,
+        "pattern": "^(\\d{1,10}\\.){0,2}[A-Fa-f0-9]{40}$",
+        "example": "0x0000000000000000000000000000000000001f41"
+      },
+      "EvmAddressNullable": {
+        "type": "string",
+        "description": "A network entity encoded as an EVM address in hex.",
+        "format": "binary",
+        "minLength": 40,
+        "maxLength": 42,
+        "nullable": true,
+        "pattern": "^(0x)?[A-Fa-f0-9]{40}$",
+        "example": "0x0000000000000000000000000000000000001f41"
+      },
+      "ExchangeRate": {
+        "type": "object",
+        "properties": {
+          "cent_equivalent": {
+            "type": "number",
+            "example": 596987
+          },
+          "expiration_time": {
+            "type": "number",
+            "example": 1649689200
+          },
+          "hbar_equivalent": {
+            "type": "number",
+            "example": 30000
+          }
+        }
+      },
+      "FixedFee": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "example": 100
+          },
+          "collector_account_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "denominating_token_id": {
+            "$ref": "#/components/schemas/EntityId"
+          }
+        }
+      },
+      "FractionalFee": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "object",
+            "properties": {
+              "numerator": {
+                "type": "number",
+                "example": 12
+              },
+              "denominator": {
+                "type": "number",
+                "example": 29
+              }
+            }
+          },
+          "collector_account_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "denominating_token_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "maximum": {
+            "type": "number",
+            "nullable": true,
+            "example": 120
+          },
+          "minimum": {
+            "type": "number",
+            "example": 30
+          },
+          "net_of_transfers": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "RoyaltyFee": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "object",
+            "properties": {
+              "numerator": {
+                "type": "number",
+                "example": 15
+              },
+              "denominator": {
+                "type": "number",
+                "example": 37
+              }
+            }
+          },
+          "collector_account_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "fallback_fee": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "number",
+                "example": 100
+              },
+              "denominating_token_id": {
+                "$ref": "#/components/schemas/EntityId"
+              }
+            }
+          }
+        }
+      },
+      "Key": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "_type": {
+            "type": "string",
+            "enum": [
+              "ECDSA_SECP256K1",
+              "ED25519",
+              "ProtobufEncoded"
+            ],
+            "example": "ProtobufEncoded"
+          },
+          "key": {
+            "type": "string",
+            "example": "7b2231222c2231222c2231227d"
+          }
+        }
+      },
+      "Links": {
+        "type": "object",
+        "properties": {
+          "next": {
+            "example": null,
+            "nullable": true
+          }
+        }
+      },
+      "NetworkNode": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "description": "a memo associated with the address book",
+            "nullable": true,
+            "type": "string"
+          },
+          "file_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "memo": {
+            "description": "memo",
+            "nullable": true,
+            "type": "string"
+          },
+          "node_id": {
+            "description": "An identifier for the node",
+            "type": "number"
+          },
+          "node_account_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "node_cert_hash": {
+            "description": "hex encoded hash of the node’s TLS certificate",
+            "nullable": true,
+            "type": "string"
+          },
+          "public_key": {
+            "description": "hex encoded X509 RSA public key used to sign stream files",
+            "nullable": true,
+            "type": "string"
+          },
+          "service_endpoints": {
+            "$ref": "#/components/schemas/ServiceEndpoints"
+          },
+          "timestamp": {
+            "$ref": "#/components/schemas/TimestampRange"
+          }
+        },
+        "example": {
+          "description": "address book 1",
+          "file_id": "0.0.102",
+          "memo": "0.0.4",
+          "node_account_id": "0.0.4",
+          "node_cert_hash": "0x01d173753810c0aae794ba72d5443c292e9ff962b01046220dd99f5816422696e0569c977e2f169e1e5688afc8f4aa16",
+          "node_id": 1,
+          "public_key": "0x4a5ad514f0957fa170a676210c9bdbddf3bc9519702cf915fa6767a40463b96f",
+          "service_endpoints": [
+            {
+              "ip_address_v4": "128.0.0.6",
+              "port": 50216
+            }
+          ],
+          "timestamp": {
+            "from": 187654.000123457,
+            "to": null
+          }
+        }
+      },
+      "NetworkNodes": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/NetworkNode"
+        }
+      },
+      "NetworkFee": {
+        "type": "object",
+        "properties": {
+          "gas": {
+            "description": "gas cost in tinybars",
+            "format": "int64",
+            "type": "number"
+          },
+          "transaction_type": {
+            "description": "type of the transaction",
+            "type": "string"
+          }
+        }
+      },
+      "NetworkFees": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/NetworkFee"
+        }
+      },
+      "Nft": {
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "created_timestamp": {
+            "$ref": "#/components/schemas/TimestampNullable"
+          },
+          "delegating_spender": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "deleted": {
+            "description": "whether the nft or the token it belongs to has been deleted",
+            "type": "boolean"
+          },
+          "metadata": {
+            "description": "base64 encoded binary data",
+            "type": "string",
+            "format": "byte"
+          },
+          "modified_timestamp": {
+            "$ref": "#/components/schemas/TimestampNullable"
+          },
+          "serial_number": {
+            "type": "number"
+          },
+          "spender": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "token_id": {
+            "$ref": "#/components/schemas/EntityId"
+          }
+        },
+        "example": {
+          "account_id": "0.1.2",
+          "created_timestamp": "1234567890.000000001",
+          "delegating_spender": "0.0.400",
+          "deleted": false,
+          "metadata": "VGhpcyBpcyBhIHRlc3QgTkZU",
+          "modified_timestamp": "1610682445.003266001",
+          "serial_number": 124,
+          "spender_id": "0.0.500",
+          "token_id": "0.0.222"
+        }
+      },
+      "Nfts": {
+        "type": "object",
+        "properties": {
+          "nfts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Nft"
+            }
+          },
+          "links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "NftTransactionTransfer": {
+        "type": "object",
+        "properties": {
+          "consensus_timestamp": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "is_approval": {
+            "type": "boolean"
+          },
+          "nonce": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "transaction_id": {
+            "type": "string"
+          },
+          "receiver_account_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "sender_account_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "type": {
+            "$ref": "#/components/schemas/TransactionTypes"
+          },
+          "token_id": {
+            "$ref": "#/components/schemas/EntityId"
+          }
+        },
+        "example": {
+          "consensus_timestamp": "1618591023.997420021",
+          "id": "0.0.19789-1618591023-997420021",
+          "is_approval": false,
+          "receiver_account_id": "0.0.11",
+          "sender_account_id": "0.0.10",
+          "type": "CRYPTOTRANSFER",
+          "token_id": "0.0.1000"
+        }
+      },
+      "Block": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "gas_used": {
+            "type": "integer",
+            "minimum": 0,
+            "format": "int64",
+            "nullable": true
+          },
+          "hapi_version": {
+            "type": "string"
+          },
+          "hash": {
+            "type": "string"
+          },
+          "logs_bloom": {
+            "description": "A hex encoded 256-byte array with 0x prefix",
+            "nullable": true,
+            "type": "string",
+            "pattern": "^0x[0-9a-fA-F]{512}$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "number": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "previous_hash": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer",
+            "nullable": true
+          },
+          "timestamp": {
+            "type": "object",
+            "properties": {
+              "from": {
+                "$ref": "#/components/schemas/TimestampRange"
+              },
+              "to": {
+                "$ref": "#/components/schemas/TimestampRange"
+              }
+            }
+          }
+        },
+        "example": {
+          "count": 3,
+          "gas_used": 300000,
+          "hapi_version": "0.11.0",
+          "hash": "0x3c08bbbee74d287b1dcd3f0ca6d1d2cb92c90883c4acf9747de9f3f3162ad25b999fc7e86699f60f2a3fb3ed9a646c6b",
+          "logs_bloom": "0x00000020002000001000000000000000000000000000000000000000000010000000000004000000000000000000000000108000000000000000000080000000000004000000000000000000000000880000000000000000000101000000000000000000000000000000000000008000000000000400000080000000000001000000000000000000000000000000000000000000002000000000100000100000200000040000100000001000000000000000000000000000000001001000004000000000000000000001000000000000000000100000000000100000000000000000000000000000000000000000000000080000100800000000000000120080",
+          "name": "2022-05-03T06_46_26.060890949Z.rcd",
+          "number": 77,
+          "previous_hash": "0xf7d6481f659c866c35391ee230c374f163642ebf13a5e604e04a95a9ca48a298dc2dfa10f51bcbaab8ae23bc6d662a0b",
+          "size": null,
+          "timestamp": {
+            "from": "1651560386.060890949",
+            "to": "1651560386.661997287"
+          }
+        }
+      },
+      "Blocks": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Block"
+        }
+      },
+      "NftTransactionHistory": {
+        "type": "object",
+        "properties": {
+          "transactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NftTransactionTransfer"
+            }
+          },
+          "links": {
+            "$ref": "#/components/schemas/Links"
+          }
+        }
+      },
+      "Schedule": {
+        "type": "object",
+        "properties": {
+          "admin_key": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "consensus_timestamp": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "creator_account_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "deleted": {
+            "type": "boolean",
+            "example": false
+          },
+          "executed_timestamp": {
+            "$ref": "#/components/schemas/TimestampNullable"
+          },
+          "expiration_time": {
+            "$ref": "#/components/schemas/TimestampNullable"
+          },
+          "memo": {
+            "type": "string",
+            "example": "created on 02/10/2021"
+          },
+          "payer_account_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "schedule_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "signatures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScheduleSignature"
+            }
+          },
+          "transaction_body": {
+            "type": "string",
+            "format": "byte",
+            "example": "Kd6tvu8="
+          },
+          "wait_for_expiry": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Schedules": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Schedule"
+        }
+      },
+      "ScheduleSignature": {
+        "type": "object",
+        "properties": {
+          "consensus_timestmap": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "public_key_prefix": {
+            "type": "string",
+            "format": "byte",
+            "example": "AAEBAwuqAwzB"
+          },
+          "signature": {
+            "type": "string",
+            "format": "byte",
+            "example": "3q2+7wABAQMLqgMMwQ=="
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "CONTRACT",
+              "ED25519",
+              "RSA_3072",
+              "ECDSA_384",
+              "ECDSA_SECP256K1",
+              "UNKNOWN"
+            ],
+            "example": "ED25519"
+          }
+        }
+      },
+      "ServiceEndpoint": {
+        "type": "object",
+        "required": [
+          "ip_address_v4",
+          "port"
+        ],
+        "properties": {
+          "ip_address_v4": {
+            "type": "string"
+          },
+          "port": {
+            "type": "number"
+          }
+        },
+        "example": {
+          "ip_address_v4": "127.0.0.1",
+          "port": 50211
+        }
+      },
+      "ServiceEndpoints": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/ServiceEndpoint"
+        }
+      },
+      "StateProofFiles": {
+        "type": "object",
+        "properties": {
+          "record_file": {
+            "type": "string",
+            "format": "byte"
+          },
+          "address_books": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "byte"
+            }
+          },
+          "signature_files": {
+            "type": "object",
+            "properties": {
+              "0.0.3": {
+                "type": "string",
+                "format": "byte"
+              },
+              "0.0.4": {
+                "type": "string",
+                "format": "byte"
+              },
+              "0.0.5": {
+                "type": "string",
+                "format": "byte"
+              },
+              "0.0.6": {
+                "type": "string",
+                "format": "byte"
+              }
+            }
+          }
+        },
+        "example": {
+          "record_file": "YzNkOTg3Yzg3NDI5NGViOTViMmRmOWZkMzZiMDY1NjYyMzMxNTc2OWFmMmVmMzQ0YzM1ODY4NzgwMTAyYjVjMA==",
+          "address_books": [
+            "MjljY2IxNGNjNWY2NWM1MmZlYjc0MjkyYjAxZDUyZmRjZjJkZTY0NWQzOTRiNTM3MDQ2ODBkYjZkMTMyZWM2Yw=="
+          ],
+          "signature_files": {
+            "0.0.3": "MWFmYzZlNWVjNGJiZTg0ZWJjNTVkMGViNDViMjE2Mzg2ZTQ2NjUzZTYyYmM1NjE2YThmZGJjNzQ1ZWIyMTQxNQ==",
+            "0.0.4": "ZDI4ZDIwMGJiYTdkNDhmNTA3ZTE0MGZhNjIyOGFiYTdmMjlmZjhiMmEzZjJhOGVlYjg1NzQyZGMwNTNjZWM3MQ==",
+            "0.0.5": "MWY0YmU5OGE3NWE4N2NkNjQ5ZTNlMWE1ODI1OTI3NTgwNWM1Y2RmNjNmYjA0YjMzMTdlZmI1MTEwNzQ2NDVjNw==",
+            "0.0.6": "NzNiZTVmMTZkNmY4NTQ4MjdiN2M4MTEzZmFlY2I1YzIwNGI5ZjFkNjhiMzdkMzczNTg4OTRkOWFiZmM5N2U4Mw==",
+            "0.0.7": "NDJiZTVmMTZkNmY4NTQ4MjdiN2M4MTEzZmFlY2I1YzIwNGI5ZjFkNjhiMzdkMzczNTg4OTRkOWFiZmM5N2U4Mw=="
+          }
+        }
+      },
+      "Timestamp": {
+        "type": "string",
+        "example": "1586567700.453054000",
+        "pattern": "^\\d{1,10}(\\.\\d{1,9})?$"
+      },
+      "TimestampNullable": {
+        "type": "string",
+        "example": "1586567700.453054000",
+        "pattern": "^\\d{1,10}(\\.\\d{1,9})?$",
+        "nullable": true
+      },
+      "TimestampRange": {
+        "type": "object",
+        "description": "A timestamp range an entity is valid for",
+        "properties": {
+          "from": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Timestamp"
+              },
+              {
+                "description": "The inclusive from timestamp in seconds"
+              }
+            ]
+          },
+          "to": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TimestampNullable"
+              },
+              {
+                "description": "The exclusive to timestamp in seconds"
+              }
+            ]
+          }
+        }
+      },
+      "Token": {
+        "type": "object",
+        "properties": {
+          "token_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "admin_key": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token_id",
+          "symbol",
+          "admin_key",
+          "type"
+        ],
+        "example": {
+          "token_id": "0.0.1",
+          "symbol": "FIRSTMOVERLPDJH",
+          "admin_key": null,
+          "type": "FUNGIBLE_COMMON"
+        }
+      },
+      "TokenAllowance": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Allowance"
+          },
+          {
+            "properties": {
+              "token_id": {
+                "$ref": "#/components/schemas/EntityId"
+              }
+            }
+          }
+        ]
+      },
+      "TokenAllowances": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/TokenAllowance"
+        }
+      },
+      "TokenBalance": {
+        "type": "object",
+        "required": [
+          "token_id",
+          "balance"
+        ],
+        "properties": {
+          "token_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "balance": {
+            "type": "number"
+          }
+        },
+        "example": {
+          "token_id": "0.0.200001",
+          "balance": 8
+        }
+      },
+      "TokenDistribution": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "account": {
+              "$ref": "#/components/schemas/EntityId"
+            },
+            "balance": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "account",
+            "balance"
+          ]
+        },
+        "example": [
+          {
+            "account": "0.15.2",
+            "balance": 1000
+          }
+        ]
+      },
+      "TokenInfo": {
+        "type": "object",
+        "properties": {
+          "admin_key": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "auto_renew_account": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "auto_renew_period": {
+            "example": null,
+            "nullable": true
+          },
+          "created_timestamp": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "decimals": {
+            "type": "string",
+            "example": 1000
+          },
+          "deleted": {
+            "type": "boolean",
+            "example": true,
+            "nullable": true
+          },
+          "expiry_timestamp": {
+            "$ref": "#/components/schemas/TimestampNullable"
+          },
+          "fee_schedule_key": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "freeze_default": {
+            "type": "boolean",
+            "example": false
+          },
+          "freeze_key": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "initial_supply": {
+            "type": "string",
+            "example": "1000000"
+          },
+          "kyc_key": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "max_supply": {
+            "type": "string",
+            "example": "9223372036854775807"
+          },
+          "modified_timestamp": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "name": {
+            "type": "string",
+            "example": "Token name"
+          },
+          "memo": {
+            "type": "string",
+            "example": "token memo"
+          },
+          "pause_key": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "pause_status": {
+            "type": "string",
+            "enum": [
+              "NOT_APPLICABLE",
+              "PAUSED",
+              "UNPAUSED"
+            ],
+            "example": "UNPAUSED"
+          },
+          "supply_key": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "supply_type": {
+            "type": "string",
+            "enum": [
+              "FINITE",
+              "INFINITE"
+            ],
+            "example": "INFINITE"
+          },
+          "symbol": {
+            "type": "string",
+            "example": "ORIGINALRDKSE"
+          },
+          "token_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "total_supply": {
+            "type": "string",
+            "example": "1000000"
+          },
+          "treasury_account_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "FUNGIBLE_COMMON",
+              "NON_FUNGIBLE_UNIQUE"
+            ],
+            "example": "FUNGIBLE_COMMON"
+          },
+          "wipe_key": {
+            "$ref": "#/components/schemas/Key"
+          },
+          "custom_fees": {
+            "$ref": "#/components/schemas/CustomFees"
+          }
+        }
+      },
+      "LogTopicQueryParam": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "pattern": "^(0x)?[0-9A-Fa-f]{1,64}$"
+        }
+      },
+      "TransactionTypes": {
+        "type": "string",
+        "enum": [
+          "CONSENSUSCREATETOPIC",
+          "CONSENSUSDELETETOPIC",
+          "CONSENSUSSUBMITMESSAGE",
+          "CONSENSUSUPDATETOPIC",
+          "CONTRACTCALL",
+          "CONTRACTCREATEINSTANCE",
+          "CONTRACTDELETEINSTANCE",
+          "CONTRACTUPDATEINSTANCE",
+          "CRYPTOADDLIVEHASH",
+          "CRYPTOAPPROVEALLOWANCE",
+          "CRYPTOCREATEACCOUNT",
+          "CRYPTODELETE",
+          "CRYPTODELETEALLOWANCE",
+          "CRYPTODELETELIVEHASH",
+          "CRYPTOTRANSFER",
+          "CRYPTOUPDATEACCOUNT",
+          "ETHEREUMTRANSACTION",
+          "FILEAPPEND",
+          "FILECREATE",
+          "FILEDELETE",
+          "FILEUPDATE",
+          "FREEZE",
+          "NODESTAKEUPDATE",
+          "SCHEDULECREATE",
+          "SCHEDULEDELETE",
+          "SCHEDULESIGN",
+          "SYSTEMDELETE",
+          "SYSTEMUNDELETE",
+          "TOKENASSOCIATE",
+          "TOKENBURN",
+          "TOKENCREATION",
+          "TOKENDELETION",
+          "TOKENDISSOCIATE",
+          "TOKENFEESCHEDULEUPDATE",
+          "TOKENFREEZE",
+          "TOKENGRANTKYC",
+          "TOKENMINT",
+          "TOKENPAUSE",
+          "TOKENREVOKEKYC",
+          "TOKENUNFREEZE",
+          "TOKENUNPAUSE",
+          "TOKENUPDATE",
+          "TOKENWIPE",
+          "UNCHECKEDSUBMIT"
+        ]
+      },
+      "Tokens": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Token"
+        }
+      },
+      "TopicMessage": {
+        "type": "object",
+        "properties": {
+          "chunk_info": {
+            "$ref": "#/components/schemas/ChunkInfo"
+          },
+          "consensus_timestamp": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "message": {
+            "type": "string"
+          },
+          "payer_account_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "running_hash": {
+            "type": "string",
+            "format": "byte"
+          },
+          "running_hash_version": {
+            "type": "number"
+          },
+          "sequence_number": {
+            "type": "number"
+          },
+          "topic_id": {
+            "$ref": "#/components/schemas/EntityId"
+          }
+        },
+        "required": [
+          "consensus_timestamp",
+          "message",
+          "payer_account_id",
+          "running_hash",
+          "running_hash_version",
+          "sequence_number",
+          "topic_id"
+        ],
+        "example": {
+          "chunk_info": {
+            "initial_transaction_id": "0.0.10-1234567890-000000321",
+            "nonce": 3,
+            "number": 1,
+            "total": 2,
+            "scheduled": true
+          },
+          "consensus_timestamp": "1234567890.000000001",
+          "message": "bWVzc2FnZQ==",
+          "payer_account_id": "0.0.10",
+          "running_hash": "cnVubmluZ19oYXNo",
+          "running_hash_version": 2,
+          "sequence_number": 1,
+          "topic_id": "0.0.7"
+        }
+      },
+      "TopicMessages": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/TopicMessage"
+        }
+      },
+      "Transaction": {
+        "type": "object",
+        "properties": {
+          "bytes": {
+            "type": "string",
+            "format": "byte",
+            "nullable": true
+          },
+          "charged_tx_fee": {
+            "type": "number"
+          },
+          "consensus_timestamp": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "entity_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "max_fee": {
+            "type": "string"
+          },
+          "memo_base64": {
+            "nullable": true
+          },
+          "name": {
+            "$ref": "#/components/schemas/TransactionTypes"
+          },
+          "node": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "nonce": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "parent_consensus_timestamp": {
+            "$ref": "#/components/schemas/TimestampNullable"
+          },
+          "result": {
+            "type": "string"
+          },
+          "scheduled": {
+            "type": "boolean"
+          },
+          "token_transfers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "token_id": {
+                  "$ref": "#/components/schemas/EntityId"
+                },
+                "account": {
+                  "$ref": "#/components/schemas/EntityId"
+                },
+                "amount": {
+                  "type": "number"
+                },
+                "is_approval": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "token_id",
+                "account",
+                "amount"
+              ]
+            }
+          },
+          "transaction_hash": {
+            "type": "string",
+            "format": "byte"
+          },
+          "transaction_id": {
+            "type": "string"
+          },
+          "transfers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "account": {
+                  "$ref": "#/components/schemas/EntityId"
+                },
+                "amount": {
+                  "type": "number"
+                },
+                "is_approval": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "account",
+                "amount"
+              ]
+            }
+          },
+          "valid_duration_seconds": {
+            "type": "string"
+          },
+          "valid_start_timestamp": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        },
+        "example": {
+          "bytes": null,
+          "charged_tx_fee": 7,
+          "consensus_timestamp": "1234567890.000000007",
+          "entity_id": "0.0.2281979",
+          "max_fee": 33,
+          "memo_base64": null,
+          "name": "CRYPTOTRANSFER",
+          "node": "0.0.3",
+          "nonce": 0,
+          "parent_consensus_timestamp": "1234567890.000000007",
+          "result": "SUCCESS",
+          "scheduled": false,
+          "transaction_hash": "vigzKe2J7fv4ktHBbNTSzQmKq7Lzdq1/lJMmHT+a2KgvdhAuadlvS4eKeqKjIRmW",
+          "transaction_id": "0.0.8-1234567890-000000006",
+          "token_transfers": [
+            {
+              "token_id": "0.0.90000",
+              "account": "0.0.9",
+              "amount": 1200,
+              "is_approval": false
+            },
+            {
+              "token_id": "0.0.90000",
+              "account": "0.0.8",
+              "amount": -1200,
+              "is_approval": false
+            }
+          ],
+          "transfers": [
+            {
+              "account": "0.0.3",
+              "amount": 2,
+              "is_approval": false
+            },
+            {
+              "account": "0.0.8",
+              "amount": -3,
+              "is_approval": false
+            },
+            {
+              "account": "0.0.98",
+              "amount": 1,
+              "is_approval": false
+            }
+          ],
+          "valid_duration_seconds": 11,
+          "valid_start_timestamp": "1234567890.000000006"
+        }
+      },
+      "TransactionDetail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Transaction"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "assessed_custom_fees": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "number"
+                    },
+                    "collector_account_id": {
+                      "$ref": "#/components/schemas/EntityId"
+                    },
+                    "effective_payer_account_ids": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/EntityId"
+                      }
+                    },
+                    "token_id": {
+                      "$ref": "#/components/schemas/EntityId"
+                    }
+                  }
+                }
+              },
+              "nft_transfers": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "is_approval": {
+                      "type": "boolean"
+                    },
+                    "receiver_account_id": {
+                      "$ref": "#/components/schemas/EntityId"
+                    },
+                    "sender_account_id": {
+                      "$ref": "#/components/schemas/EntityId"
+                    },
+                    "serial_number": {
+                      "type": "number"
+                    },
+                    "token_id": {
+                      "$ref": "#/components/schemas/EntityId"
+                    }
+                  },
+                  "required": [
+                    "serial_number",
+                    "token_id"
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "example": {
+          "assessed_custom_fees": [
+            {
+              "amount": 100,
+              "collector_account_id": "0.0.10",
+              "effective_payer_account_ids": [
+                "0.0.8",
+                "0.0.72"
+              ],
+              "token_id": "0.0.90001"
+            }
+          ],
+          "bytes": null,
+          "charged_tx_fee": 7,
+          "consensus_timestamp": "1234567890.000000007",
+          "entity_id": "0.0.2281979",
+          "max_fee": 33,
+          "memo_base64": null,
+          "name": "CRYPTOTRANSFER",
+          "nft_transfers": [
+            {
+              "is_approval": true,
+              "receiver_account_id": "0.0.121",
+              "sender_account_id": "0.0.122",
+              "serial_number": 1,
+              "token_id": "0.0.123"
+            },
+            {
+              "is_approval": true,
+              "receiver_account_id": "0.0.321",
+              "sender_account_id": "0.0.422",
+              "serial_number": 2,
+              "token_id": "0.0.123"
+            }
+          ],
+          "node": "0.0.3",
+          "nonce": 0,
+          "parent_consensus_timestamp": "1234567890.000000007",
+          "result": "SUCCESS",
+          "scheduled": false,
+          "transaction_hash": "vigzKe2J7fv4ktHBbNTSzQmKq7Lzdq1/lJMmHT+a2KgvdhAuadlvS4eKeqKjIRmW",
+          "transaction_id": "0.0.8-1234567890-000000006",
+          "token_transfers": [
+            {
+              "token_id": "0.0.90000",
+              "account": "0.0.9",
+              "amount": 1200,
+              "is_approval": true
+            },
+            {
+              "token_id": "0.0.90000",
+              "account": "0.0.8",
+              "amount": -1200,
+              "is_approval": true
+            }
+          ],
+          "transfers": [
+            {
+              "account": "0.0.3",
+              "amount": 2,
+              "is_approval": true
+            },
+            {
+              "account": "0.0.8",
+              "amount": -3,
+              "is_approval": true
+            },
+            {
+              "account": "0.0.98",
+              "amount": 1,
+              "is_approval": true
+            }
+          ],
+          "valid_duration_seconds": 11,
+          "valid_start_timestamp": "1234567890.000000006"
+        }
+      },
+      "TransactionDetails": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/TransactionDetail"
+        }
+      },
+      "TransactionId": {
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "$ref": "#/components/schemas/EntityId"
+          },
+          "nonce": {
+            "example": 0,
+            "type": "integer",
+            "minimum": 0,
+            "nullable": true
+          },
+          "scheduled": {
+            "example": false,
+            "type": "boolean",
+            "nullable": true
+          },
+          "transaction_valid_start": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        }
+      },
+      "TransactionIdStr": {
+        "type": "string",
+        "description": "A transaction id in string format.",
+        "pattern": "^(\\d+)\\.(\\d+)\\.(\\d+)-(\\d{1,19})-(\\d{1,9})$"
+      },
+      "Transactions": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Transaction"
+        }
+      }
+    },
+    "responses": {
+      "NotFoundError": {
+        "description": "Not Found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "_status": {
+                "messages": [
+                  {
+                    "message": "Not found"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "TopicNotFound": {
+        "description": "Topic Not Found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "_status": {
+                "messages": [
+                  {
+                    "message": "No such topic id - 7"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "TransactionNotFound": {
+        "description": "Transaction Not Found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "_status": {
+                "messages": [
+                  {
+                    "message": "Transaction not found"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "InvalidParameterError": {
+        "description": "Invalid parameter",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "_status": {
+                "messages": [
+                  {
+                    "message": "Invalid parameter: account.id"
+                  },
+                  {
+                    "message": "Invalid Transaction id. Please use \\shard.realm.num-sss-nnn\\ format where sss are seconds and nnn are nanoseconds"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "ServiceUnavailableError": {
+        "description": "Service Unavailable",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "_status": {
+                "messages": [
+                  {
+                    "message": "Require at least 1/3 signature files to prove consensus, got 1 out of 4 for file 2019-10-11T13_33_25.526889Z.rcd_sig"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "accountIdOrAliasOrEvmAddressPathParam": {
+        "name": "idOrAliasOrEvmAddress",
+        "in": "path",
+        "description": "Account alias or account id or evm address",
+        "required": true,
+        "examples": {
+          "aliasOnly": {
+            "value": "HIQQEXWKW53RKN4W6XXC4Q232SYNZ3SZANVZZSUME5B5PRGXL663UAQA"
+          },
+          "realmAlias": {
+            "value": "0.HIQQEXWKW53RKN4W6XXC4Q232SYNZ3SZANVZZSUME5B5PRGXL663UAQA"
+          },
+          "shardRealmAlias": {
+            "value": "0.1.HIQQEXWKW53RKN4W6XXC4Q232SYNZ3SZANVZZSUME5B5PRGXL663UAQA"
+          },
+          "accountNumOnly": {
+            "value": 8
+          },
+          "realmAccountNum": {
+            "value": 0.8
+          },
+          "shardRealmAccountNum": {
+            "value": "0.0.8"
+          },
+          "evmAddress": {
+            "value": "ac384c53f03855fa1b3616052f8ba32c6c2a2fec"
+          },
+          "evmAddressWithPrefix": {
+            "value": 9.832019034092927e+47
+          },
+          "evmAddressWithShardAndRealm": {
+            "value": "0.0.ac384c53f03855fa1b3616052f8ba32c6c2a2fec"
+          }
+        },
+        "schema": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/AccountAlias"
+            },
+            {
+              "$ref": "#/components/schemas/EntityId"
+            },
+            {
+              "$ref": "#/components/schemas/EvmAddress"
+            },
+            {
+              "$ref": "#/components/schemas/EvmAddressWithShardRealm"
+            }
+          ]
+        }
+      },
+      "accountBalanceQueryParam": {
+        "name": "account.balance",
+        "in": "query",
+        "description": "The optional balance value to compare against",
+        "explode": true,
+        "examples": {
+          "noValue": {
+            "summary": "--",
+            "value": ""
+          },
+          "noOperator": {
+            "summary": "Example of equals with no operator",
+            "value": 100
+          },
+          "eqOperator": {
+            "summary": "Example of equals operator",
+            "value": "eq:200"
+          },
+          "neOperator": {
+            "summary": "Example of not equals operator",
+            "value": "ne:300"
+          },
+          "gtOperator": {
+            "summary": "Example of greater than operator",
+            "value": "gt:400"
+          },
+          "gteOperator": {
+            "summary": "Example of greater than or equals operator",
+            "value": "gte:500"
+          },
+          "ltOperator": {
+            "summary": "Example of less than operator",
+            "value": "lt:600"
+          },
+          "lteOperator": {
+            "summary": "Example of less than or equals operator",
+            "value": "lte:700"
+          }
+        },
+        "schema": {
+          "type": "string",
+          "pattern": "^((gte?|lte?|eq|ne)\\:)?\\d{1,10}$"
+        }
+      },
+      "accountIdQueryParam": {
+        "name": "account.id",
+        "in": "query",
+        "description": "The ID of the account to return information for",
+        "explode": true,
+        "examples": {
+          "noValue": {
+            "summary": "--",
+            "value": ""
+          },
+          "entityNumNoOperator": {
+            "summary": "Example of entityNum equals with no operator",
+            "value": 100
+          },
+          "idNoOperator": {
+            "summary": "Example of id equals with no operator",
+            "value": "0.0.100"
+          },
+          "entityNumEqOperator": {
+            "summary": "Example of entityNum equals operator",
+            "value": "eq:200"
+          },
+          "idEqOperator": {
+            "summary": "Example of id equals operator",
+            "value": "eq:0.0.200"
+          },
+          "entityNumNeOperator": {
+            "summary": "Example of entityNum not equals operator",
+            "value": "ne:300"
+          },
+          "idNeOperator": {
+            "summary": "Example of id not equals operator",
+            "value": "ne:0.0.300"
+          },
+          "entityNumGtOperator": {
+            "summary": "Example of entityNum greater than operator",
+            "value": "gt:400"
+          },
+          "idGtOperator": {
+            "summary": "Example of id greater than operator",
+            "value": "gt:0.0.400"
+          },
+          "entityNumGteOperator": {
+            "summary": "Example of entityNum greater than or equals operator",
+            "value": "gte:500"
+          },
+          "idGteOperator": {
+            "summary": "Example of id greater than or equals operator",
+            "value": "gte:0.0.500"
+          },
+          "entityNumLtOperator": {
+            "summary": "Example of entityNum less than operator",
+            "value": "lt:600"
+          },
+          "idLtOperator": {
+            "summary": "Example of id less than operator",
+            "value": "lt:0.0.600"
+          },
+          "entityNumLteOperator": {
+            "summary": "Example of entityNum less than or equals operator",
+            "value": "lte:700"
+          },
+          "idLteOperator": {
+            "summary": "Example of id less than or equals operator",
+            "value": "lte:0.0.700"
+          }
+        },
+        "schema": {
+          "$ref": "#/components/schemas/EntityIdQuery"
+        }
+      },
+      "accountPublicKeyQueryParam": {
+        "name": "account.publickey",
+        "in": "query",
+        "description": "The account's public key to compare against",
+        "example": "3c3d546321ff6f63d701d2ec5c277095874e19f4a235bee1e6bb19258bf362be",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "balanceQueryParam": {
+        "name": "balance",
+        "in": "query",
+        "description": "Whether to include balance information or not",
+        "example": true,
+        "schema": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "contractIdQueryParam": {
+        "name": "contract.id",
+        "description": "The ID of the smart contract",
+        "in": "query",
+        "examples": {
+          "noValue": {
+            "summary": "--",
+            "value": ""
+          },
+          "entityNumNoOperator": {
+            "summary": "Example of entityNum equals with no operator",
+            "value": 100
+          },
+          "idNoOperator": {
+            "summary": "Example of id equals with no operator",
+            "value": "0.0.100"
+          },
+          "evmAddressNoOperator": {
+            "summary": "A hex encoded EVM address with no operator.",
+            "value": "0.0.1d8bfdc5d46dc4f61d6b6115972536ebe6a8854c"
+          },
+          "entityNumEqOperator": {
+            "summary": "Example of entityNum equals operator",
+            "value": "eq:200"
+          },
+          "idEqOperator": {
+            "summary": "Example of id equals operator",
+            "value": "eq:0.0.200"
+          },
+          "entityNumNeOperator": {
+            "summary": "Example of entityNum not equals operator",
+            "value": "ne:300"
+          },
+          "idNeOperator": {
+            "summary": "Example of id not equals operator",
+            "value": "ne:0.0.300"
+          },
+          "entityNumGtOperator": {
+            "summary": "Example of entityNum greater than operator",
+            "value": "gt:400"
+          },
+          "idGtOperator": {
+            "summary": "Example of id greater than operator",
+            "value": "gt:0.0.400"
+          },
+          "entityNumGteOperator": {
+            "summary": "Example of entityNum greater than or equals operator",
+            "value": "gte:500"
+          },
+          "idGteOperator": {
+            "summary": "Example of id greater than or equals operator",
+            "value": "gte:0.0.500"
+          },
+          "entityNumLtOperator": {
+            "summary": "Example of entityNum less than operator",
+            "value": "lt:600"
+          },
+          "idLtOperator": {
+            "summary": "Example of id less than operator",
+            "value": "lt:0.0.600"
+          },
+          "entityNumLteOperator": {
+            "summary": "Example of entityNum less than or equals operator",
+            "value": "lte:700"
+          },
+          "idLteOperator": {
+            "summary": "Example of id less than or equals operator",
+            "value": "lte:0.0.700"
+          }
+        },
+        "schema": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/EntityIdQuery"
+            },
+            {
+              "$ref": "#/components/schemas/EvmAddressWithShardRealm"
+            }
+          ]
+        }
+      },
+      "contractIdPathParam": {
+        "name": "contractIdOrAddress",
+        "in": "path",
+        "required": true,
+        "description": "The ID or hex encoded EVM address associated with this contract.",
+        "schema": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/EntityId"
+            },
+            {
+              "$ref": "#/components/schemas/EvmAddressWithShardRealm"
+            }
+          ]
+        }
+      },
+      "hashOrNumberPathParam": {
+        "name": "hashOrNumber",
+        "in": "path",
+        "required": true,
+        "description": "Accepts both eth and hedera hash format or block number",
+        "schema": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/HederaHash"
+            },
+            {
+              "$ref": "#/components/schemas/EthereumHash"
+            },
+            {
+              "$ref": "#/components/schemas/PositiveNumber"
+            }
+          ]
+        }
+      },
+      "entityIdPathParam": {
+        "name": "entityId",
+        "in": "path",
+        "required": true,
+        "description": "Entity id",
+        "schema": {
+          "$ref": "#/components/schemas/EntityId"
+        }
+      },
+      "fileIdQueryParam": {
+        "name": "file.id",
+        "description": "The ID of the file entity",
+        "in": "query",
+        "examples": {
+          "noValue": {
+            "summary": "--",
+            "value": ""
+          },
+          "entityNumNoOperator": {
+            "summary": "Example of entityNum equals with no operator",
+            "value": 100
+          },
+          "idNoOperator": {
+            "summary": "Example of id equals with no operator",
+            "value": "0.0.100"
+          },
+          "entityNumEqOperator": {
+            "summary": "Example of entityNum equals operator",
+            "value": "eq:200"
+          },
+          "idEqOperator": {
+            "summary": "Example of id equals operator",
+            "value": "eq:0.0.200"
+          }
+        },
+        "schema": {
+          "$ref": "#/components/schemas/EntityIdQuery"
+        }
+      },
+      "scheduleIdPathParam": {
+        "name": "scheduleId",
+        "in": "path",
+        "required": true,
+        "description": "Schedule id",
+        "schema": {
+          "$ref": "#/components/schemas/EntityId"
+        }
+      },
+      "tokenIdPathParam": {
+        "name": "tokenId",
+        "in": "path",
+        "required": true,
+        "description": "Token id",
+        "schema": {
+          "$ref": "#/components/schemas/EntityId"
+        }
+      },
+      "topicIdPathParam": {
+        "name": "topicId",
+        "in": "path",
+        "required": true,
+        "description": "Topic id",
+        "schema": {
+          "$ref": "#/components/schemas/EntityId"
+        }
+      },
+      "fromQueryParam": {
+        "name": "from",
+        "in": "query",
+        "description": "Account ID or EVM address executing the contract",
+        "schema": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/EntityId"
+            },
+            {
+              "$ref": "#/components/schemas/EvmAddress"
+            }
+          ]
+        }
+      },
+      "logIndexQueryParam": {
+        "name": "index",
+        "in": "query",
+        "description": "Contract log index",
+        "schema": {
+          "type": "string",
+          "pattern": "^((eq|gt|gte|lt|lte):)?\\d{1,10}$"
+        },
+        "examples": {
+          "noValue": {
+            "summary": "--",
+            "value": ""
+          },
+          "indexNoOperator": {
+            "summary": "Example of index equals with no operator",
+            "value": 2
+          },
+          "indexEqOperator": {
+            "summary": "Example of index equals with operator",
+            "value": "eq:2"
+          },
+          "indexGtOperator": {
+            "summary": "Example of index greater than operator",
+            "value": "gt:2"
+          },
+          "indexGteOperator": {
+            "summary": "Example of index greater than or equals operator",
+            "value": "gte:2"
+          },
+          "indexLtOperator": {
+            "summary": "Example of index less than operator",
+            "value": "lt:2"
+          },
+          "indexLteOperator": {
+            "summary": "Example of index less than or equals operator",
+            "value": "lte:2"
+          }
+        }
+      },
+      "limitQueryParam": {
+        "name": "limit",
+        "in": "query",
+        "description": "The maximum number of items to return",
+        "example": 2,
+        "schema": {
+          "type": "integer",
+          "default": 25,
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "blockNumberQueryParam": {
+        "name": "block.number",
+        "in": "query",
+        "description": "The block's number",
+        "examples": {
+          "noValue": {
+            "summary": "--",
+            "value": ""
+          },
+          "noOperator": {
+            "summary": "Example of block.number equals with no operator",
+            "value": 1
+          },
+          "eqOperator": {
+            "summary": "Example of block.number equals operator",
+            "value": "eq:2"
+          },
+          "gtOperator": {
+            "summary": "Example of block.number greater than operator",
+            "value": "gt:3"
+          },
+          "gteOperator": {
+            "summary": "Example of block.number greater than or equals operator",
+            "value": "gte:4"
+          },
+          "ltOperator": {
+            "summary": "Example of block.number less than operator",
+            "value": "lt:5"
+          },
+          "lteOperator": {
+            "summary": "Example of block.number less than or equals operator",
+            "value": "lte:6"
+          }
+        },
+        "schema": {
+          "type": "string",
+          "pattern": "^((eq|gt|gte|lt|lte):)?\\d{1,19}$",
+          "minimum": 0
+        }
+      },
+      "nodeIdQueryParam": {
+        "name": "node.id",
+        "description": "The ID of the node",
+        "in": "query",
+        "examples": {
+          "noValue": {
+            "summary": "--",
+            "value": ""
+          },
+          "serialNumNoOperator": {
+            "summary": "Example of nodeId equals with no operator",
+            "value": 1
+          },
+          "serialNumEqOperator": {
+            "summary": "Example of nodeId equals operator",
+            "value": "eq:2"
+          },
+          "serialNumGtOperator": {
+            "summary": "Example of nodeId greater than operator",
+            "value": "gt:3"
+          },
+          "serialNumGteOperator": {
+            "summary": "Example of nodeId greater than or equals operator",
+            "value": "gte:4"
+          },
+          "serialNumLtOperator": {
+            "summary": "Example of nodeId less than operator",
+            "value": "lt:5"
+          },
+          "serialNumLteOperator": {
+            "summary": "Example of nodeId less than or equals operator",
+            "value": "lte:6"
+          }
+        },
+        "schema": {
+          "type": "string",
+          "pattern": "^((eq|gt|gte|lt|lte):)?\\d{1,19}$"
+        }
+      },
+      "nonceQueryParam": {
+        "name": "nonce",
+        "in": "query",
+        "description": "Filter the query result by the nonce of the transaction. A zero nonce represents user submitted transactions while a non-zero nonce is generated by main nodes. The filter honors the last value. If not specified, all transactions with specified payer account ID and valid start timestamp match.",
+        "example": 0,
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "nonceQueryParamWithDefault": {
+        "name": "nonce",
+        "in": "query",
+        "description": "Filter the query result by the nonce of the transaction. A zero nonce represents user submitted transactions while a non-zero nonce is generated by main nodes. The filter honors the last value. Default is 0 when not specified.",
+        "example": 1,
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "minimum": 0
+        }
+      },
+      "orderQueryParam": {
+        "name": "order",
+        "in": "query",
+        "description": "The order in which items are listed",
+        "example": "desc",
+        "schema": {
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "asc"
+        }
+      },
+      "orderQueryParamDesc": {
+        "name": "order",
+        "in": "query",
+        "description": "The order in which items are listed",
+        "example": "asc",
+        "schema": {
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "desc"
+        }
+      },
+      "publicKeyQueryParam": {
+        "name": "publickey",
+        "in": "query",
+        "description": "The public key to compare against",
+        "example": "3c3d546321ff6f63d701d2ec5c277095874e19f4a235bee1e6bb19258bf362be",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "scheduledQueryParam": {
+        "name": "scheduled",
+        "in": "query",
+        "description": "Filter transactions by the scheduled flag. If true, return information for the scheduled transaction. If false, return information for the non-scheduled transaction. If not present, return information for all transactions matching transactionId.",
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      "scheduledQueryParamWithDefault": {
+        "name": "scheduled",
+        "in": "query",
+        "description": "Filter transactions by the scheduled flag. If true, return information for the scheduled transaction. If false, return information for the non-scheduled transaction.",
+        "schema": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "scheduleIdQueryParam": {
+        "name": "schedule.id",
+        "description": "The ID of the schedule to return information for",
+        "in": "query",
+        "examples": {
+          "noValue": {
+            "summary": "--",
+            "value": ""
+          },
+          "entityNumNoOperator": {
+            "summary": "Example of entityNum equals with no operator",
+            "value": 100
+          },
+          "idNoOperator": {
+            "summary": "Example of id equals with no operator",
+            "value": "0.0.100"
+          },
+          "entityNumEqOperator": {
+            "summary": "Example of entityNum equals operator",
+            "value": "eq:200"
+          },
+          "idEqOperator": {
+            "summary": "Example of id equals operator",
+            "value": "eq:0.0.200"
+          },
+          "entityNumNeOperator": {
+            "summary": "Example of entityNum not equals operator",
+            "value": "ne:300"
+          },
+          "idNeOperator": {
+            "summary": "Example of id not equals operator",
+            "value": "ne:0.0.300"
+          },
+          "entityNumGtOperator": {
+            "summary": "Example of entityNum greater than operator",
+            "value": "gt:400"
+          },
+          "idGtOperator": {
+            "summary": "Example of id greater than operator",
+            "value": "gt:0.0.400"
+          },
+          "entityNumGteOperator": {
+            "summary": "Example of entityNum greater than or equals operator",
+            "value": "gte:500"
+          },
+          "idGteOperator": {
+            "summary": "Example of id greater than or equals operator",
+            "value": "gte:0.0.500"
+          },
+          "entityNumLtOperator": {
+            "summary": "Example of entityNum less than operator",
+            "value": "lt:600"
+          },
+          "idLtOperator": {
+            "summary": "Example of id less than operator",
+            "value": "lt:0.0.600"
+          },
+          "entityNumLteOperator": {
+            "summary": "Example of entityNum less than or equals operator",
+            "value": "lte:700"
+          },
+          "idLteOperator": {
+            "summary": "Example of id less than or equals operator",
+            "value": "lte:0.0.700"
+          }
+        },
+        "schema": {
+          "$ref": "#/components/schemas/EntityIdQuery"
+        }
+      },
+      "serialNumberPathParam": {
+        "name": "serialNumber",
+        "in": "path",
+        "required": true,
+        "description": "The nft serial number",
+        "example": 1,
+        "schema": {
+          "type": "integer",
+          "format": "int64",
+          "default": 1,
+          "minimum": 1,
+          "maximum": 9223372036854776000
+        }
+      },
+      "serialNumberQueryParam": {
+        "name": "serialnumber",
+        "in": "query",
+        "explode": true,
+        "description": "The nft serial number (64 bit type). Requires a tokenId value also be populated.",
+        "examples": {
+          "noValue": {
+            "summary": "--",
+            "value": ""
+          },
+          "serialNumNoOperator": {
+            "summary": "Example of serialNum equals with no operator",
+            "value": 100
+          },
+          "serialNumEqOperator": {
+            "summary": "Example of serialNum equals operator",
+            "value": "eq:200"
+          },
+          "serialNumGtOperator": {
+            "summary": "Example of serialNum greater than operator",
+            "value": "gt:400"
+          },
+          "serialNumGteOperator": {
+            "summary": "Example of serialNum greater than or equals operator",
+            "value": "gte:500"
+          },
+          "serialNumLtOperator": {
+            "summary": "Example of serialNum less than operator",
+            "value": "lt:600"
+          },
+          "serialNumLteOperator": {
+            "summary": "Example of serialNum less than or equals operator",
+            "value": "lte:700"
+          }
+        },
+        "schema": {
+          "type": "string",
+          "pattern": "^((eq|gt|gte|lt|lte):)?\\d{1,19}?$"
+        }
+      },
+      "timestampQueryParam": {
+        "description": "The consensus timestamp in seconds.nanoseconds format with an optional comparison operator",
+        "name": "timestamp",
+        "in": "query",
+        "explode": true,
+        "examples": {
+          "noValue": {
+            "summary": "--",
+            "value": ""
+          },
+          "secondsNoOperator": {
+            "summary": "Example of seconds equals with no operator",
+            "value": 1234567890
+          },
+          "timestampNoOperator": {
+            "summary": "Example of timestamp equals with no operator",
+            "value": 1234567890
+          },
+          "secondsEqOperator": {
+            "summary": "Example of seconds equals with operator",
+            "value": "eq:1234567890"
+          },
+          "timestampEqOperator": {
+            "summary": "Example of timestamp equals with operator",
+            "value": "eq:1234567890.000000200"
+          },
+          "secondsNeOperator": {
+            "summary": "Example of seconds not equals operator",
+            "value": "ne:1234567890"
+          },
+          "timestampNeOperator": {
+            "summary": "Example of timestamp not equals operator",
+            "value": "ne:1234567890.000000300"
+          },
+          "secondsGtOperator": {
+            "summary": "Example of seconds greater than operator",
+            "value": "gt:1234567890"
+          },
+          "timestampGtOperator": {
+            "summary": "Example of timestamp greater than operator",
+            "value": "gt:1234567890.000000400"
+          },
+          "secondsGteOperator": {
+            "summary": "Example of seconds greater than or equals operator",
+            "value": "gte:1234567890"
+          },
+          "timestampGteOperator": {
+            "summary": "Example of timestamp greater than or equals operator",
+            "value": "gte:1234567890.000000500"
+          },
+          "secondsLtOperator": {
+            "summary": "Example of seconds less than operator",
+            "value": "lt:1234567890"
+          },
+          "timestampLtOperator": {
+            "summary": "Example of timestamp less than operator",
+            "value": "lt:1234567890.000000600"
+          },
+          "secondsLteOperator": {
+            "summary": "Example of seconds less than or equals operator",
+            "value": "lte:1234567890"
+          },
+          "timestampLteOperator": {
+            "summary": "Example of timestamp less than or equals operator",
+            "value": "lte:1234567890.000000700"
+          }
+        },
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^((eq|gt|gte|lt|lte|ne):)?\\d{1,10}(.\\d{1,9})?$"
+          }
+        }
+      },
+      "timestampPathParam": {
+        "name": "timestamp",
+        "in": "path",
+        "description": "The timestamp at which the associated transaction reached consensus",
+        "required": true,
+        "example": 1234567890.0000007,
+        "schema": {
+          "type": "string",
+          "pattern": "^\\d{1,10}(.\\d{1,9})?$"
+        }
+      },
+      "tokenInfoTimestampQueryParam": {
+        "name": "timestamp",
+        "in": "query",
+        "explode": true,
+        "examples": {
+          "noValue": {
+            "summary": "--",
+            "value": ""
+          },
+          "secondsNoOperator": {
+            "summary": "Example of seconds equals with no operator",
+            "value": 1234567890
+          },
+          "timestampNoOperator": {
+            "summary": "Example of timestamp equals with no operator",
+            "value": 1234567890
+          },
+          "secondsEqOperator": {
+            "summary": "Example of seconds equals with operator",
+            "value": "eq:1234567890"
+          },
+          "timestampEqOperator": {
+            "summary": "Example of timestamp equals with operator",
+            "value": "eq:1234567890.000000200"
+          },
+          "secondsLtOperator": {
+            "summary": "Example of seconds less than operator",
+            "value": "lt:1234567890"
+          },
+          "timestampLtOperator": {
+            "summary": "Example of timestamp less than operator",
+            "value": "lt:1234567890.000000600"
+          },
+          "secondsLteOperator": {
+            "summary": "Example of seconds less than or equals operator",
+            "value": "lte:1234567890"
+          },
+          "timestampLteOperator": {
+            "summary": "Example of timestamp less than or equals operator",
+            "value": "lte:1234567890.000000700"
+          }
+        },
+        "schema": {
+          "type": "string",
+          "pattern": "^((eq|lt|lte):)?\\d{1,10}(.\\d{1,9})?$"
+        }
+      },
+      "logTopic0QueryParam": {
+        "name": "topic0",
+        "in": "query",
+        "explode": true,
+        "description": "The first topic associated with a contract log. Requires a timestamp range also be populated.",
+        "schema": {
+          "$ref": "#/components/schemas/LogTopicQueryParam"
+        }
+      },
+      "logTopic1QueryParam": {
+        "name": "topic1",
+        "in": "query",
+        "description": "The second topic associated with a contract log. Requires a timestamp range also be populated.",
+        "schema": {
+          "$ref": "#/components/schemas/LogTopicQueryParam"
+        }
+      },
+      "logTopic2QueryParam": {
+        "name": "topic2",
+        "in": "query",
+        "description": "The third topic associated with a contract log. Requires a timestamp range also be populated.",
+        "schema": {
+          "$ref": "#/components/schemas/LogTopicQueryParam"
+        }
+      },
+      "logTopic3QueryParam": {
+        "name": "topic3",
+        "in": "query",
+        "description": "The fourth topic associated with a contract log. Requires a timestamp range also be populated.",
+        "schema": {
+          "$ref": "#/components/schemas/LogTopicQueryParam"
+        }
+      },
+      "spenderIdQueryParam": {
+        "name": "spender.id",
+        "description": "The ID of the spender to return information for",
+        "in": "query",
+        "examples": {
+          "noValue": {
+            "summary": "--",
+            "value": ""
+          },
+          "entityNumNoOperator": {
+            "summary": "Example of entityNum equals with no operator",
+            "value": 100
+          },
+          "idNoOperator": {
+            "summary": "Example of id equals with no operator",
+            "value": "0.0.100"
+          },
+          "entityNumEqOperator": {
+            "summary": "Example of entityNum equals operator",
+            "value": "eq:200"
+          },
+          "idEqOperator": {
+            "summary": "Example of id equals operator",
+            "value": "eq:0.0.200"
+          },
+          "idGtOperator": {
+            "summary": "Example of id greather than operator",
+            "value": "gt:0.0.200"
+          },
+          "idGteOperator": {
+            "summary": "Example of id greather than or equal to operator",
+            "value": "gte:0.0.200"
+          },
+          "idLtOperator": {
+            "summary": "Example of id less than operator",
+            "value": "lt:0.0.200"
+          },
+          "idLteOperator": {
+            "summary": "Example of id less than or equal to operator",
+            "value": "lte:0.0.200"
+          }
+        },
+        "schema": {
+          "$ref": "#/components/schemas/EntityIdQuery"
+        }
+      },
+      "transactionTypeQueryParam": {
+        "name": "transactiontype",
+        "in": "query",
+        "example": "cryptotransfer",
+        "schema": {
+          "$ref": "#/components/schemas/TransactionTypes"
+        }
+      },
+      "transactionIdPathParam": {
+        "name": "transactionId",
+        "in": "path",
+        "required": true,
+        "description": "Transaction id",
+        "example": "0.0.10-1234567890-000000000",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "tokenIdQueryParam": {
+        "name": "token.id",
+        "description": "The ID of the token to return information for",
+        "in": "query",
+        "examples": {
+          "noValue": {
+            "summary": "--",
+            "value": ""
+          },
+          "entityNumNoOperator": {
+            "summary": "Example of entityNum equals with no operator",
+            "value": 100
+          },
+          "idNoOperator": {
+            "summary": "Example of id equals with no operator",
+            "value": "0.0.100"
+          },
+          "entityNumEqOperator": {
+            "summary": "Example of entityNum equals operator",
+            "value": "eq:200"
+          },
+          "idEqOperator": {
+            "summary": "Example of id equals operator",
+            "value": "eq:0.0.200"
+          },
+          "entityNumNeOperator": {
+            "summary": "Example of entityNum not equals operator",
+            "value": "ne:300"
+          },
+          "idNeOperator": {
+            "summary": "Example of id not equals operator",
+            "value": "ne:0.0.300"
+          },
+          "entityNumGtOperator": {
+            "summary": "Example of entityNum greater than operator",
+            "value": "gt:400"
+          },
+          "idGtOperator": {
+            "summary": "Example of id greater than operator",
+            "value": "gt:0.0.400"
+          },
+          "entityNumGteOperator": {
+            "summary": "Example of entityNum greater than or equals operator",
+            "value": "gte:500"
+          },
+          "idGteOperator": {
+            "summary": "Example of id greater than or equals operator",
+            "value": "gte:0.0.500"
+          },
+          "entityNumLtOperator": {
+            "summary": "Example of entityNum less than operator",
+            "value": "lt:600"
+          },
+          "idLtOperator": {
+            "summary": "Example of id less than operator",
+            "value": "lt:0.0.600"
+          },
+          "entityNumLteOperator": {
+            "summary": "Example of entityNum less than or equals operator",
+            "value": "lte:700"
+          },
+          "idLteOperator": {
+            "summary": "Example of id less than or equals operator",
+            "value": "lte:0.0.700"
+          }
+        },
+        "schema": {
+          "$ref": "#/components/schemas/EntityIdQuery"
+        }
+      },
+      "tokenTypeQueryParam": {
+        "name": "type",
+        "in": "query",
+        "example": [
+          "ALL",
+          "FUNGIBLE_COMMON",
+          "NON_FUNGIBLE_UNIQUE"
+        ],
+        "explode": true,
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "contractsBlockNumberQueryParam": {
+        "name": "block.number",
+        "in": "query",
+        "description": "The block's number",
+        "examples": {
+          "noValue": {
+            "summary": "--",
+            "value": ""
+          },
+          "noOperator": {
+            "summary": "Example of block.number equals with no operator",
+            "value": 1
+          },
+          "eqOperator": {
+            "summary": "Example of block.number equals operator",
+            "value": "eq:2"
+          },
+          "hexEncoded": {
+            "summary": "Example of hex encoded block.number equals with no operator",
+            "value": "0xa0"
+          },
+          "hexEncodedEqOperator": {
+            "summary": "Example of hex encoded block.number equals with equals operator",
+            "value": "eq:0xa0"
+          }
+        },
+        "schema": {
+          "type": "string",
+          "pattern": "^(eq:)?(\\d{1,19}|0x[a-fA-f0-9]+)$",
+          "minimum": 0
+        }
+      },
+      "blockHashQueryParam": {
+        "name": "block.hash",
+        "in": "query",
+        "description": "The block's hash",
+        "examples": {
+          "noValue": {
+            "summary": "--",
+            "value": ""
+          },
+          "32ByteNoOperator": {
+            "summary": "Example of 32 byte block.hash equals with no operator",
+            "value": "ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+          },
+          "48ByteNoOperator": {
+            "summary": "Example of 48 byte block.hash equals with no operator",
+            "value": "1eaf1abbd64bbcac7f473f0272671c66d3d1d64f584112b11cd4d2063e736305312fcb305804a48baa41571e71c39c61"
+          },
+          "32ByteEqOperator": {
+            "summary": "Example of 32 byte block.hash with equals operator",
+            "value": "eq:ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+          },
+          "48ByteEqOperator": {
+            "summary": "Example of 48 byte block.hash with equals operator",
+            "value": "eq:1eaf1abbd64bbcac7f473f0272671c66d3d1d64f584112b11cd4d2063e736305312fcb305804a48baa41571e71c39c61"
+          },
+          "32Byte0xPrefixNoOperator": {
+            "summary": "Example of 32 byte block.hash equals with 0x prefix and no operator",
+            "value": "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+          },
+          "48Byte0xPrefixNoOperator": {
+            "summary": "Example of 48 byte block.hash equals with 0x prefix and no operator",
+            "value": "0x1eaf1abbd64bbcac7f473f0272671c66d3d1d64f584112b11cd4d2063e736305312fcb305804a48baa41571e71c39c61"
+          },
+          "32Byte0xPrefixEqOperator": {
+            "summary": "Example of 32 byte block.hash with 0x prefix and equals operator",
+            "value": "eq:0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+          },
+          "48Byte0xPrefixEqOperator": {
+            "summary": "Example of 48 byte block.hash with 0x prefix and equals operator",
+            "value": "eq:0x1eaf1abbd64bbcac7f473f0272671c66d3d1d64f584112b11cd4d2063e736305312fcb305804a48baa41571e71c39c61"
+          }
+        },
+        "schema": {
+          "type": "string",
+          "pattern": "^(eq:)?(0x)?([0-9A-Fa-f]{64}|[0-9A-Fa-f]{96})$"
+        }
+      },
+      "transactionIndexQueryParam": {
+        "name": "transaction.index",
+        "in": "query",
+        "description": "The transaction index in the block",
+        "example": 1,
+        "schema": {
+          "type": "number"
+        }
+      },
+      "internalQueryParam": {
+        "name": "internal",
+        "in": "query",
+        "description": "Whether to include child transactions or not",
+        "example": true,
+        "schema": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "transactionIdOrEthHashPathParam": {
+        "name": "transactionIdOrHash",
+        "in": "path",
+        "schema": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/EthereumHash"
+            },
+            {
+              "$ref": "#/components/schemas/TransactionIdStr"
+            }
+          ]
+        },
+        "required": true,
+        "description": "Transaction Id or a 32 byte hash with optional 0x prefix",
+        "examples": {
+          "trahsactionId": {
+            "value": "0.0.10-1234567890-000000000"
+          },
+          "transactionHash": {
+            "value": "ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+          },
+          "transactionHashWith0xPrefix": {
+            "value": "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+          }
+        }
+      }
+    }
+  }
+}
